@@ -6,19 +6,12 @@ __license__ = 'GNU Affero General Public License http://www.gnu.org/licenses/agp
 __copyright__ = "Copyright (C) 2014 The OctoPrint Project - Released under terms of the AGPLv3 License"
 
 
-import os
 import logging
-from flask import jsonify
+from flask import jsonify, make_response
 
 import octoprint.plugin
 
-
-default_settings = {
-	"socket": "/var/run/netconnectd.sock",
-	"hostname": None
-}
-s = octoprint.plugin.plugin_settings("netconnectd", defaults=default_settings)
-
+from octoprint.server import admin_permission
 
 class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
                                 octoprint.plugin.TemplatePlugin,
@@ -26,32 +19,32 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
                                 octoprint.plugin.AssetPlugin):
 
 	def __init__(self):
-		self.logger = logging.getLogger("plugins.netconnectd." + __name__)
-		self.address = s.get(["socket"])
+		self.address = None
+
+	def initialize(self):
+		self.address = self._settings.get(["socket"])
 
 	@property
 	def hostname(self):
-		if s.get(["hostname"]):
-			return s.get(["hostname"])
+		hostname = self._settings.get(["hostname"])
+		if hostname:
+			return hostname
 		else:
 			import socket
 			return socket.gethostname() + ".local"
 
 	##~~ SettingsPlugin
 
-	def on_settings_load(self):
-		return {
-			"socket": s.get(["socket"]),
-			"hostname": s.get(["hostname"])
-		}
-
 	def on_settings_save(self, data):
-		if "socket" in data and data["socket"]:
-			s.set(["socket"], data["socket"])
-		if "hostname" in data and data["hostname"]:
-			s.set(["hostname"], data["hostname"])
+		octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
+		self.address = self._settings.get(["socket"])
 
-		self.address = s.get(["socket"])
+	def get_settings_defaults(self):
+		return dict(
+			socket="/var/run/netconnectd.sock",
+			hostname=None,
+			timeout=10
+		)
 
 	##~~ TemplatePlugin API
 
@@ -63,37 +56,47 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ SimpleApiPlugin API
 
 	def get_api_commands(self):
-		return {
-			"start_ap": [],
-			"stop_ap": [],
-			"refresh_wifi": [],
-			"configure_wifi": ["ssid", "psk"],
-			"forget_wifi": [],
-			"reset": []
-		}
+		return dict(
+			start_ap=[],
+			stop_ap=[],
+			refresh_wifi=[],
+			configure_wifi=[],
+			forget_wifi=[],
+			reset=[]
+		)
+
+	def is_api_adminonly(self):
+		return True
 
 	def on_api_get(self, request):
 		try:
-			wifis = self._get_wifi_list()
 			status = self._get_status()
+			if status["wifi"]["present"]:
+				wifis = self._get_wifi_list()
+			else:
+				wifis = []
 		except Exception as e:
 			return jsonify(dict(error=e.message))
 
-		return jsonify({
-			"wifis": wifis,
-			"status": status,
-			"hostname": self.hostname
-		})
+		return jsonify(dict(
+			wifis=wifis,
+			status=status,
+			hostname=self.hostname
+		))
 
 	def on_api_command(self, command, data):
 		if command == "refresh_wifi":
 			return jsonify(self._get_wifi_list(force=True))
 
-		elif command == "configure_wifi":
+		# any commands processed after this check require admin permissions
+		if not admin_permission.can():
+			return make_response("Insufficient rights", 403)
+
+		if command == "configure_wifi":
 			if data["psk"]:
-				self.logger.info("Configuring wifi {ssid} and psk...".format(**data))
+				self._logger.info("Configuring wifi {ssid} and psk...".format(**data))
 			else:
-				self.logger.info("Configuring wifi {ssid}...".format(**data))
+				self._logger.info("Configuring wifi {ssid}...".format(**data))
 
 			self._configure_and_select_wifi(data["ssid"], data["psk"], force=data["force"] if "force" in data else False)
 
@@ -112,18 +115,18 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ AssetPlugin API
 
 	def get_assets(self):
-		return {
-			"js": ["js/netconnectd.js"],
-			"css": ["css/netconnectd.css"],
-			"less": ["less/netconnectd.less"]
-		}
+		return dict(
+			js=["js/netconnectd.js"],
+			css=["css/netconnectd.css"],
+			less=["less/netconnectd.less"]
+		)
 
 	##~~ Private helpers
 
 	def _get_wifi_list(self, force=False):
 		payload = dict()
 		if force:
-			self.logger.info("Forcing wifi refresh...")
+			self._logger.info("Forcing wifi refresh...")
 			payload["force"] = True
 
 		flag, content = self._send_message("list_wifi", payload)
@@ -192,7 +195,7 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 
 		import socket
 		sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-		sock.settimeout(10)
+		sock.settimeout(self._settings.get_int(["timeout"]))
 		try:
 			sock.connect(self.address)
 			sock.sendall(js + '\x00')
@@ -213,35 +216,37 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 
 			elif "error" in response:
 				# something went wrong
-				self.logger.warn("Request to netconnectd went wrong: " + response["error"])
+				self._logger.warn("Request to netconnectd went wrong: " + response["error"])
 				return False, response["error"]
 
 			else:
 				output = "Unknown response from netconnectd: {response!r}".format(response=response)
-				self.logger.warn(output)
+				self._logger.warn(output)
 				return False, output
 
 		except Exception as e:
 			output = "Error while talking to netconnectd: {}".format(e.message)
-			self.logger.warn(output)
+			self._logger.warn(output)
 			return False, output
 
 		finally:
 			sock.close()
 
-__plugin_name__ = "netconnectd client"
-__plugin_version__ = "0.1"
-__plugin_description__ = "Client for netconnectd that allows configuration of netconnectd through OctoPrint's settings dialog"
-__plugin_implementations__ = []
+__plugin_name__ = "Netconnectd Client"
 
 def __plugin_check__():
 	import sys
-	if not sys.platform == 'linux2':
-		logging.getLogger("octoprint.plugins." + __name__).warn("The netconnectd plugin only supports Linux")
-		return False
+	if sys.platform == 'linux2':
+		return True
 
-	global __plugin_implementations__
-	__plugin_implementations__ = [NetconnectdSettingsPlugin()]
+	logging.getLogger("octoprint.plugins." + __name__).warn("The netconnectd plugin only supports Linux")
+	return False
+
+def __plugin_load__():
+	# since we depend on a Linux environment, we instantiate the plugin implementation here since this will only be
+	# called if the OS check above was successful
+	global __plugin_implementation__
+	__plugin_implementation__ = NetconnectdSettingsPlugin()
 	return True
 
 
