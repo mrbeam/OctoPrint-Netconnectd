@@ -7,3 +7,4 @@ printf "Remove old version...\n"
 sudo -u pi /home/pi/oprint/bin/pip uninstall -y Octoprint-netconnectd
 printf "Installing new version...\n"
 sudo -u pi /home/pi/oprint/bin/python setup.py install
+
