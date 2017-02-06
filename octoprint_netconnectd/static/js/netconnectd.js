@@ -14,6 +14,8 @@ $(function() {
         self.enableQualitySorting = ko.observable(false);
 
         self.hostname = ko.observable();
+        self.forwardUrl = ko.observable();
+        
         self.status = {
             link: ko.observable(),
             connections: {
@@ -120,6 +122,7 @@ $(function() {
             }
 
             self.hostname(response.hostname);
+            self.forwardUrl(response.forwardUrl);
 
             self.status.link(response.status.link);
             self.status.connections.ap(response.status.connections.ap);
@@ -179,7 +182,7 @@ $(function() {
         };
 
         self.configureWifi = function(data) {
-            if (!self.loginState.isAdmin()) return;
+            // if (!self.loginState.isAdmin()) return;
 
             self.editorWifi = data;
             self.editorWifiSsid(data.ssid);
@@ -203,12 +206,12 @@ $(function() {
         };
 
         self.sendStartAp = function() {
-            if (!self.loginState.isAdmin()) return;
+            // if (!self.loginState.isAdmin()) return;
             self._postCommand("start_ap", {});
         };
 
         self.sendStopAp = function() {
-            if (!self.loginState.isAdmin()) return;
+            // if (!self.loginState.isAdmin()) return;
             self._postCommand("stop_ap", {});
         };
 
@@ -220,44 +223,47 @@ $(function() {
         };
 
         self.sendWifiConfig = function(ssid, psk, successCallback, failureCallback) {
-            if (!self.loginState.isAdmin()) return;
+            // if (!self.loginState.isAdmin()) return;
 
             self.working(true);
             if (self.status.connections.ap()) {
                 self.reconnectInProgress = true;
 
-                var reconnectText = gettext("OctoPrint is now switching to your configured Wifi connection and therefore shutting down the Access Point. I'm continuously trying to reach it at <strong>%(hostname)s</strong> but it might take a while. If you are not reconnected over the next couple of minutes, please try to reconnect to OctoPrint manually because then I was unable to find it myself.");
+                var reconnectText = gettext("OctoPrint is now switching to your configured Wifi connection and therefore shutting down the Access Point. I'm continuously trying to reach it at <strong>%(forwardUrl)</strong> but it might take a while. If you are not reconnected over the next couple of minutes, please try to reconnect to OctoPrint manually because then I was unable to find it myself.");
 
                 showOfflineOverlay(
                     gettext("Reconnecting..."),
-                    _.sprintf(reconnectText, {hostname: self.hostname()}),
+                    _.sprintf(reconnectText, {hostname: self.forwardUrl()}),
                     self.tryReconnect
                 );
             }
             self._postCommand("configure_wifi", {ssid: ssid, psk: psk}, successCallback, failureCallback, function() {
                 self.working(false);
-                if (self.reconnectInProgress) {
-                    self.tryReconnect();
-                }
+                // if (self.reconnectInProgress) {
+                //     self.tryReconnect();
+                // }
             }, 5000);
         };
 
         self.sendReset = function() {
-            if (!self.loginState.isAdmin()) return;
+            // if (!self.loginState.isAdmin()) return;
 
             self._postCommand("reset", {});
         };
 
         self.sendForgetWifi = function() {
-            if (!self.loginState.isAdmin()) return;
+            // if (!self.loginState.isAdmin()) return;
             self._postCommand("forget_wifi", {});
         };
 
         self.tryReconnect = function() {
-            var hostname = self.hostname();
+            // // ANDYTEST
+            // return
+            // var hostname = self.hostname();
 
-            var location = window.location.href
-            location = location.replace(location.match("https?\\://([^:@]+(:[^@]+)?@)?([^:/]+)")[3], hostname);
+            // var location = window.location.href
+            // location = location.replace(location.match("https?\\://([^:@]+(:[^@]+)?@)?([^:/]+)")[3], hostname);
+            var location = self.forwardUrl();
 
             var pingCallback = function(result) {
                 if (!result) {
@@ -322,6 +328,11 @@ $(function() {
                 self.requestData();
             }
         };
+        
+        // // ANDYTEST this is manually added
+        // self.onStartupComplete = function() {
+        //     self.requestData();
+        // }
 
         self.onBeforeBinding = function() {
             self.settings = self.settingsViewModel.settings;

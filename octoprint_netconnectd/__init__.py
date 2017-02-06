@@ -23,6 +23,7 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 
 	def initialize(self):
 		self.address = self._settings.get(["socket"])
+		self.forwardUrl = self._settings.get(["forwardUrl"])
 
 	@property
 	def hostname(self):
@@ -43,6 +44,7 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 		return dict(
 			socket="/var/run/netconnectd.sock",
 			hostname=None,
+			forwardUrl=None,
 			timeout=10
 		)
 
@@ -66,7 +68,7 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 		)
 
 	def is_api_adminonly(self):
-		return True
+		return False
 
 	def on_api_get(self, request):
 		try:
@@ -81,16 +83,20 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 		return jsonify(dict(
 			wifis=wifis,
 			status=status,
-			hostname=self.hostname
+			hostname=self.hostname,
+			forwardUrl=self.forwardUrl
 		))
 
-	def on_api_command(self, command, data):
+	def on_api_command(self, command, data, adminRequired=True):
 		if command == "refresh_wifi":
 			return jsonify(self._get_wifi_list(force=True))
 
 		# any commands processed after this check require admin permissions
-		if not admin_permission.can():
+		# ANDYTEST disabled this
+		if adminRequired and not admin_permission.can():
 			return make_response("Insufficient rights", 403)
+			
+		self._logger.info("ANDYTEST on_api_command called with adminRequired=%s", adminRequired)
 
 		if command == "configure_wifi":
 			if data["psk"]:
@@ -155,10 +161,12 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 		)
 
 		flag, content = self._send_message("config_wifi", payload)
+		self._logger.info("ANDYTEST NETCONNECTD config_wifi: flag=%s, content=%s", flag, content)
 		if not flag:
 			raise RuntimeError("Error while configuring wifi: " + content)
 
 		flag, content = self._send_message("start_wifi", dict())
+		self._logger.info("ANDYTEST NETCONNECTD start_wifi: flag=%s, content=%s", flag, content)
 		if not flag:
 			raise RuntimeError("Error while selecting wifi: " + content)
 
@@ -195,6 +203,7 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 
 		import socket
 		sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+		self._logger.info("ANDYTEST self._settings.get_int(['timeout']): %s", self._settings.get_int(["timeout"]))
 		sock.settimeout(self._settings.get_int(["timeout"]))
 		try:
 			sock.connect(self.address)
