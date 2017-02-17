@@ -5,6 +5,8 @@ $(function() {
         self.loginState = parameters[0];
         self.settingsViewModel = parameters[1];
 
+        self.isWizardActive = false;
+
         self.pollingEnabled = false;
         self.pollingTimeoutId = undefined;
 
@@ -71,6 +73,23 @@ $(function() {
 
             return text;
         });
+        
+        self.onWizardDetails = function(response){
+            console.log("ANDYETST onWizardDetails() setting self.isWizardActive = true");
+            self.isWizardActive = true;
+            
+            // and load data
+            self.requestData();
+        };
+        
+        self.onWizardFinish = function(response){
+            console.log("ANDYETST onWizardFinish() setting self.isWizardActive = false");
+            self.isWizardActive = false;
+        };
+        
+        self.canRun = function(){
+            return (self.isWizardActive || self.loginState.isAdmin());
+        };
 
         self.daemonOnline = ko.computed(function() {
             return (!(self.error()));
@@ -182,7 +201,7 @@ $(function() {
         };
 
         self.configureWifi = function(data) {
-            // if (!self.loginState.isAdmin()) return;
+            if (!self.canRun()) return;
 
             self.editorWifi = data;
             self.editorWifiSsid(data.ssid);
@@ -194,24 +213,53 @@ $(function() {
                 self.confirmWifiConfiguration();
             }
         };
-
+        
         self.confirmWifiConfiguration = function() {
-            self.sendWifiConfig(self.editorWifiSsid(), self.editorWifiPassphrase1(), function() {
+            var self = this;
+            
+            self.sendWifiConfig(self.editorWifiSsid(), self.editorWifiPassphrase1(),
+            // successCallback 
+            function() {
+                var myWifi = self.editorWifiSsid();
                 self.editorWifi = undefined;
                 self.editorWifiSsid(undefined);
                 self.editorWifiPassphrase1(undefined);
                 self.editorWifiPassphrase2(undefined);
+                self.working(false);
                 $("#settings_plugin_netconnectd_wificonfig").modal("hide");
+                if (self.reconnectInProgress) {
+                    self.tryReconnect();
+                }
+                new PNotify({
+                    title: gettext("Wifi Connected"),
+                    text: _.sprintf(gettext("Mr Beam 2 is now connceted to your wifi '%s'."), myWifi),
+                    type: "success"
+                });
+                // refresh wifi state
+                self.refresh();
+            },
+            // failureCallback
+            function() {
+                var myWifi = self.editorWifiSsid();
+                self.refresh();
+                $("#settings_plugin_netconnectd_wificonfig").modal("hide");
+                hideOfflineOverlay();
+                self.working(false);
+                new PNotify({
+                    title: gettext("Connection failed"),
+                    text: _.sprintf(gettext("Mr Beam 2 could not connect to your wifi '%s'. Did you enter the correct passphrase?"), myWifi),
+                    type: "error"
+                });
             });
         };
 
         self.sendStartAp = function() {
-            // if (!self.loginState.isAdmin()) return;
+            if (!self.canRun()) return;
             self._postCommand("start_ap", {});
         };
 
         self.sendStopAp = function() {
-            // if (!self.loginState.isAdmin()) return;
+            if (!self.canRun()) return;
             self._postCommand("stop_ap", {});
         };
 
@@ -221,19 +269,19 @@ $(function() {
                 self.fromResponse({"wifis": response});
             });
         };
-
+        
         self.sendWifiConfig = function(ssid, psk, successCallback, failureCallback) {
-            // if (!self.loginState.isAdmin()) return;
+            if (!self.canRun()) return;
 
             self.working(true);
             if (self.status.connections.ap()) {
                 self.reconnectInProgress = true;
 
-                var reconnectText = gettext("OctoPrint is now switching to your configured Wifi connection and therefore shutting down the Access Point. I'm continuously trying to reach it at <strong>%(forwardUrl)</strong> but it might take a while. If you are not reconnected over the next couple of minutes, please try to reconnect to OctoPrint manually because then I was unable to find it myself.");
+                var reconnectText = gettext("OctoPrint is now switching to your configured Wifi connection and therefore shutting down the Access Point. I'm continuously trying to reach it at <strong>%(hostname)s</strong> but it might take a while. If you are not reconnected over the next couple of minutes, please try to reconnect to OctoPrint manually because then I was unable to find it myself.");
 
                 showOfflineOverlay(
                     gettext("Reconnecting..."),
-                    _.sprintf(reconnectText, {hostname: self.forwardUrl()}),
+                    _.sprintf(reconnectText, {hostname: self.hostname()}),
                     self.tryReconnect
                 );
             }
@@ -242,17 +290,18 @@ $(function() {
                 // if (self.reconnectInProgress) {
                 //     self.tryReconnect();
                 // }
-            }, 5000);
+            // }, 5000);
+            }, 80000);
         };
 
         self.sendReset = function() {
-            // if (!self.loginState.isAdmin()) return;
+            if (!self.canRun()) return;
 
             self._postCommand("reset", {});
         };
 
         self.sendForgetWifi = function() {
-            // if (!self.loginState.isAdmin()) return;
+            if (!self.canRun()) return;
             self._postCommand("forget_wifi", {});
         };
 
@@ -272,7 +321,7 @@ $(function() {
 
                 if (self.reconnectTimeout != undefined) {
                     clearTimeout(self.reconnectTimeout);
-                    window.location.replace(location);
+                    window.location.href = location;
                 }
                 hideOfflineOverlay();
                 self.reconnectInProgress = false;
@@ -286,7 +335,7 @@ $(function() {
             var payload = _.extend(data, {command: command});
 
             var params = {
-                url: API_BASEURL + "plugin/netconnectd",
+                url: self.isWizardActive ? "/plugin/mrbeam/wifi" : API_BASEURL + "plugin/netconnectd",
                 type: "POST",
                 dataType: "json",
                 data: JSON.stringify(payload),
@@ -317,6 +366,7 @@ $(function() {
 
             $.ajax({
                 url: API_BASEURL + "plugin/netconnectd",
+                // url: self.isWizardActive ? "/plugin/mrbeam/wifi" : API_BASEURL + "plugin/netconnectd",
                 type: "GET",
                 dataType: "json",
                 success: self.fromResponse
@@ -328,11 +378,6 @@ $(function() {
                 self.requestData();
             }
         };
-        
-        // // ANDYTEST this is manually added
-        // self.onStartupComplete = function() {
-        //     self.requestData();
-        // }
 
         self.onBeforeBinding = function() {
             self.settings = self.settingsViewModel.settings;
