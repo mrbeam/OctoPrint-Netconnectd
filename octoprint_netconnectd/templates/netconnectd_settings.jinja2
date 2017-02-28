@@ -65,17 +65,17 @@
         </div>
         <div class="modal-body">
             <form class="form-horizontal">
-                <div class="control-group">
+                <div class="control-group" data-bind="css: {success: $root.editorWifiPassphrase2() && !$root.editorWifiPassphraseMismatch()}">
                     <label class="control-label" for="settings_plugin_netconnectd_wificonfig_passphrase1">{{ _('Password') }}</label>
                     <div class="controls">
-                        <input type="password" class="input-block-level" id="settings_plugin_netconnectd_wificonfig_passphrase1" data-bind="value: $root.editorWifiPassphrase1" required>
+                        <input type="password" class="input-block-level" id="settings_plugin_netconnectd_wificonfig_passphrase1" data-bind="value: $root.editorWifiPassphrase1, valueUpdate: 'input'" required>
                     </div>
                 </div>
-                <div class="control-group" data-bind="css: {error: $root.editorWifiPassphraseMismatch()}">
+                <div class="control-group" data-bind="css: {success: $root.editorWifiPassphrase2() && !$root.editorWifiPassphraseMismatch(), error: $root.editorWifiPassphrase2() && $root.editorWifiPassphraseMismatch()}">
                     <label class="control-label" for="settings_plugin_netconnectd_wificonfig_passphrase2">{{ _('Repeat Password') }}</label>
                     <div class="controls">
-                        <input type="password" class="input-block-level" id="settings_plugin_netconnectd_wificonfig_passphrase2" data-bind="value: $root.editorWifiPassphrase2, valueUpdate: 'afterkeydown'" required>
-                        <span class="help-inline" data-bind="visible: $root.editorWifiPassphraseMismatch()">{{ _('Passwords do not match') }}</span>
+                        <input type="password" class="input-block-level" id="settings_plugin_netconnectd_wificonfig_passphrase2" data-bind="value: $root.editorWifiPassphrase2, valueUpdate: 'input'" required>
+                        <span class="help-inline" data-bind="visible: $root.editorWifiPassphrase2() && $root.editorWifiPassphraseMismatch()">{{ _('Passwords do not match') }}</span>
                     </div>
                 </div>
             </form>

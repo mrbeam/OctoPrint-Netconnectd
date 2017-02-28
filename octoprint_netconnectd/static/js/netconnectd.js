@@ -4,6 +4,8 @@ $(function() {
 
         self.loginState = parameters[0];
         self.settingsViewModel = parameters[1];
+        
+        self.allViewModels = undefined;
 
         self.isWizardActive = false;
 
@@ -14,9 +16,9 @@ $(function() {
         self.reconnectTimeout = undefined;
 
         self.enableQualitySorting = ko.observable(false);
-
-        self.hostname = ko.observable();
-        self.forwardUrl = ko.observable();
+        
+        self.hostname = ko.observable(undefined);
+        self.forwardUrl = ko.observable(undefined);
         
         self.status = {
             link: ko.observable(),
@@ -38,6 +40,10 @@ $(function() {
         self.editorWifiPassphrase1 = ko.observable();
         self.editorWifiPassphrase2 = ko.observable();
         self.editorWifiPassphraseMismatch = ko.computed(function() {
+            return self.editorWifiPassphrase1() != self.editorWifiPassphrase2();
+        });
+        self.editorWifiPassphraseNotEmpty = ko.computed(function() {
+            
             return self.editorWifiPassphrase1() != self.editorWifiPassphrase2();
         });
 
@@ -73,6 +79,10 @@ $(function() {
 
             return text;
         });
+        
+        self.onAllBound = function(allViewModels) {
+            self.allViewModels = allViewModels;
+        }
         
         self.onWizardDetails = function(response){
             console.log("ANDYETST onWizardDetails() setting self.isWizardActive = true");
@@ -116,8 +126,7 @@ $(function() {
                     return 0;
                 }
             },
-            {
-            },
+            {},
             "quality",
             [],
             [],
@@ -141,7 +150,7 @@ $(function() {
             }
 
             self.hostname(response.hostname);
-            self.forwardUrl(response.forwardUrl);
+            self.forwardUrl(response.forwardUrl ? response.forwardUrl : undefined);
 
             self.status.link(response.status.link);
             self.status.connections.ap(response.status.connections.ap);
@@ -272,6 +281,17 @@ $(function() {
         
         self.sendWifiConfig = function(ssid, psk, successCallback, failureCallback) {
             if (!self.canRun()) return;
+            
+            // trigger onBeforeWifiConfigure event.
+            callViewModels(self.allViewModels, "onBeforeWifiConfigure", 
+                function(viewModelCallback){
+                    if (viewModelCallback && typeof viewModelCallback === 'function') {
+                    var result = viewModelCallback();
+                    if (result && result.forwardUrl) {
+                        self.forwardUrl(result.forwardUrl);
+                    }
+                }
+            });
 
             self.working(true);
             if (self.status.connections.ap()) {
@@ -306,13 +326,14 @@ $(function() {
         };
 
         self.tryReconnect = function() {
-            // // ANDYTEST
-            // return
-            // var hostname = self.hostname();
-
-            // var location = window.location.href
-            // location = location.replace(location.match("https?\\://([^:@]+(:[^@]+)?@)?([^:/]+)")[3], hostname);
-            var location = self.forwardUrl();
+            var location = undefined;
+            if (!self.forwardUrl()) {
+                var hostname = self.hostname();
+                location = window.location.href
+                location = location.replace(location.match("https?\\://([^:@]+(:[^@]+)?@)?([^:/]+)")[3], hostname);
+            } else {
+                location = self.forwardUrl();
+            }
 
             var pingCallback = function(result) {
                 if (!result) {

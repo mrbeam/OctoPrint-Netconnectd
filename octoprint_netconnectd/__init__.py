@@ -44,8 +44,9 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 		return dict(
 			socket="/var/run/netconnectd.sock",
 			hostname=None,
-			forwardUrl=None,
-			timeout=10
+			forwardUrl='http://find.mr-beam.org:5000',
+			# ANDYTEST TODO: check timeouts
+			timeout=80
 		)
 
 	##~~ TemplatePlugin API
@@ -58,6 +59,7 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ SimpleApiPlugin API
 
 	def get_api_commands(self):
+		self._logger.info("ANDYTEST get_api_commands() ")
 		return dict(
 			start_ap=[],
 			stop_ap=[],
@@ -203,7 +205,6 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 
 		import socket
 		sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-		self._logger.info("ANDYTEST self._settings.get_int(['timeout']): %s", self._settings.get_int(["timeout"]))
 		sock.settimeout(self._settings.get_int(["timeout"]))
 		try:
 			sock.connect(self.address)
