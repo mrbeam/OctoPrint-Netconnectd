@@ -44,7 +44,7 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 		return dict(
 			socket="/var/run/netconnectd.sock",
 			hostname=None,
-			forwardUrl='http://find.mr-beam.org:5000',
+			forwardUrl='http://find.mr-beam.org',
 			# ANDYTEST TODO: check timeouts
 			timeout=80
 		)
@@ -59,7 +59,6 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ SimpleApiPlugin API
 
 	def get_api_commands(self):
-		self._logger.info("ANDYTEST get_api_commands() ")
 		return dict(
 			start_ap=[],
 			stop_ap=[],
@@ -94,12 +93,9 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 			return jsonify(self._get_wifi_list(force=True))
 
 		# any commands processed after this check require admin permissions
-		# ANDYTEST disabled this
 		if adminRequired and not admin_permission.can():
 			return make_response("Insufficient rights", 403)
 			
-		self._logger.info("ANDYTEST on_api_command called with adminRequired=%s", adminRequired)
-
 		if command == "configure_wifi":
 			if data["psk"]:
 				self._logger.info("Configuring wifi {ssid} and psk...".format(**data))
@@ -163,12 +159,12 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 		)
 
 		flag, content = self._send_message("config_wifi", payload)
-		self._logger.info("ANDYTEST NETCONNECTD config_wifi: flag=%s, content=%s", flag, content)
+		self._logger.info("config_wifi: flag=%s, content=%s", flag, content)
 		if not flag:
 			raise RuntimeError("Error while configuring wifi: " + content)
 
 		flag, content = self._send_message("start_wifi", dict())
-		self._logger.info("ANDYTEST NETCONNECTD start_wifi: flag=%s, content=%s", flag, content)
+		self._logger.info("start_wifi: flag=%s, content=%s", flag, content)
 		if not flag:
 			raise RuntimeError("Error while selecting wifi: " + content)
 
