@@ -1,8 +1,10 @@
-<div id="settings_plugin_netconnectd_dialog" data-bind="allowBindings: true">
+<div id="settings_plugin_netconnectd_dialog" data-bind="allowBindings: true" class="scrollable" style="padding-bottom:2em; overflow-y: auto; height: calc(100vh - 100px);">
     <p>
-        <strong>{{ _('Connection state') }}:</strong> <span data-bind="text: connectionStateText"></span>
+        <strong>{{ _('Ethernet') }}:</strong> <span data-bind="text: connectionStateTextEthernet"></span>
     </p>
-
+    <p>
+        <strong>{{ _('Wifi') }}:</strong> <span data-bind="text: connectionStateTextWifi"></span>
+    </p>
     <div class="pull-right" data-bind="visible: enableQualitySorting">
         <small>
             {{ _('Sort by') }}: <a href="#" data-bind="click: function() { listHelper.changeSorting('ssid'); }">{{ _('SSID') }} ({{ _('ascending') }})</a> | <a href="#" data-bind="click: function() { listHelper.changeSorting('quality'); }">{{ _('Quality') }} ({{ _('descending') }})</a>
