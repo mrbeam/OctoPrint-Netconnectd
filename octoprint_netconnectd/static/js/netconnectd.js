@@ -208,7 +208,7 @@ $(function() {
                 var qualityInt = parseInt(wifi.quality);
                 var quality = undefined;
                 if (!isNaN(qualityInt)) {
-                    quality = qualityInt;
+                    quality = self._convert_dbm_to_percent(qualityInt);
                 }
 
                 wifis.push({
@@ -216,7 +216,7 @@ $(function() {
                     address: wifi.address,
                     encrypted: wifi.encrypted,
                     quality: quality,
-                    qualityText: (quality != undefined) ? "" + quality + " dBm" : undefined
+                    qualityText: (quality != undefined) ? "" + quality + " %" : ""
                 });
             });
 
@@ -441,6 +441,21 @@ $(function() {
 
         self.onServerDisconnect = function() {
             return !self.reconnectInProgress;
+        }
+
+        self._convert_dbm_to_percent = function(dbm) {
+            var res = 0;
+            var max = -40;
+            var min = -90;
+            dbm = parseInt(dbm);
+            if (dbm > max) {
+                res = 100;
+            } else if (dbm < min) {
+                res = 0;
+            } else {
+                res = Math.round(10-((dbm*-1 +max) / (max-min)) * 10)*10
+            }
+            return res;
         }
 
     }
