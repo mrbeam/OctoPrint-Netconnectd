@@ -7,6 +7,7 @@ __copyright__ = "Copyright (C) 2014 The OctoPrint Project - Released under terms
 
 
 import logging
+import netifaces
 from flask import jsonify, make_response
 
 import octoprint.plugin
@@ -45,7 +46,6 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 			socket="/var/run/netconnectd.sock",
 			hostname=None,
 			forwardUrl='http://find.mr-beam.org',
-			# ANDYTEST TODO: check timeouts
 			timeout=80
 		)
 
@@ -53,7 +53,7 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_template_configs(self):
 		return [
-			dict(type="settings", name="Network connection")
+			dict(type="settings", name="Network Connection")
 		]
 
 	##~~ SimpleApiPlugin API
@@ -79,13 +79,17 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 			else:
 				wifis = []
 		except Exception as e:
-			return jsonify(dict(error=e.message))
+			return jsonify(dict(error=str(e)))
 
 		return jsonify(dict(
 			wifis=wifis,
 			status=status,
 			hostname=self.hostname,
-			forwardUrl=self.forwardUrl
+			forwardUrl=self.forwardUrl,
+			ip_addresses=dict(
+				eth0=self._get_ip_address('eth0'),
+				wlan0=self._get_ip_address('wlan0')
+			)
 		))
 
 	def on_api_command(self, command, data, adminRequired=True):
@@ -231,12 +235,23 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 				return False, output
 
 		except Exception as e:
-			output = "Error while talking to netconnectd: {}".format(e.message)
+			output = "Error while talking to netconnectd: {}".format(e)
 			self._logger.warn(output)
 			return False, output
 
 		finally:
 			sock.close()
+
+	def _get_ip_address(self, interface):
+		"""
+		Returns the external IP address of the given interface
+		:param interface:
+		:return: String IP
+		"""
+		try:
+			return netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr']
+		except:
+			pass
 
 __plugin_name__ = "Netconnectd Client"
 

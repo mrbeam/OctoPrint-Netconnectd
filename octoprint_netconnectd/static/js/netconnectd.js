@@ -31,7 +31,11 @@ $(function() {
                 current_ssid: ko.observable(),
                 current_address: ko.observable(),
                 present: ko.observable()
-            }
+            },
+            ip_addresses: {
+				eth0: ko.observable(),
+				wlan0: ko.observable(),
+			}
         };
         self.statusCurrentWifi = ko.observable();
 
@@ -79,7 +83,27 @@ $(function() {
 
             return text;
         });
-        
+
+        self.connectionStateTextEthernet = ko.computed(function() {
+            if (self.status.connections.wired()) {
+                return "Connected (IP: " + self.status.ip_addresses.eth0() + ")";
+            } else {
+                return "Not connected";
+            }
+        });
+
+        self.connectionStateTextWifi = ko.computed(function() {
+            if (self.status.connections.ap()) {
+                return "Access point (IP: " + self.status.ip_addresses.wlan0() + ")";
+            } else if (self.status.connections.wifi() && self.status.wifi.current_ssid()) {
+                return _.sprintf(gettext("Connected to \"%(ssid)s\" (IP: %(ip)s)"), {ssid: self.status.wifi.current_ssid(), ip: self.status.ip_addresses.wlan0()});
+            } else if (self.status.connections.wifi()) {
+                return _.sprintf(gettext("Connected to unknown wifi (IP: %(ip)s)"), {ssid: self.status.wifi.current_ssid(), ip: self.status.ip_addresses.wlan0()});
+            } else {
+                return "Access point down, not connected";
+            }
+        });
+
         self.onAllBound = function(allViewModels) {
             self.allViewModels = allViewModels;
         }
@@ -159,6 +183,8 @@ $(function() {
             self.status.wifi.current_ssid(response.status.wifi.current_ssid);
             self.status.wifi.current_address(response.status.wifi.current_address);
             self.status.wifi.present(response.status.wifi.present);
+            self.status.ip_addresses.eth0(response.ip_addresses.eth0);
+            self.status.ip_addresses.wlan0(response.ip_addresses.wlan0);
 
             self.statusCurrentWifi(undefined);
             if (response.status.wifi.current_ssid && response.status.wifi.current_address) {
@@ -182,10 +208,7 @@ $(function() {
                 var qualityInt = parseInt(wifi.quality);
                 var quality = undefined;
                 if (!isNaN(qualityInt)) {
-                    if (qualityInt <= 0) {
-                        qualityInt = (-1) * qualityInt;
-                    }
-                    quality = qualityInt;
+                    quality = self._convert_dbm_to_percent(qualityInt);
                 }
 
                 wifis.push({
@@ -193,7 +216,7 @@ $(function() {
                     address: wifi.address,
                     encrypted: wifi.encrypted,
                     quality: quality,
-                    qualityText: (quality != undefined) ? "" + quality + "%" : undefined
+                    qualityText: (quality != undefined) ? "" + quality + " %" : ""
                 });
             });
 
@@ -418,6 +441,21 @@ $(function() {
 
         self.onServerDisconnect = function() {
             return !self.reconnectInProgress;
+        }
+
+        self._convert_dbm_to_percent = function(dbm) {
+            var res = 0;
+            var max = -40;
+            var min = -90;
+            dbm = parseInt(dbm);
+            if (dbm > max) {
+                res = 100;
+            } else if (dbm < min) {
+                res = 0;
+            } else {
+                res = Math.round(10-((dbm*-1 +max) / (max-min)) * 10)*10
+            }
+            return res;
         }
 
     }
