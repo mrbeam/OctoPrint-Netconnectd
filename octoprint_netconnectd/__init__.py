@@ -7,17 +7,22 @@ __copyright__ = "Copyright (C) 2014 The OctoPrint Project - Released under terms
 
 
 import logging
+import threading
 import netifaces
 from flask import jsonify, make_response
 
 import octoprint.plugin
-
 from octoprint.server import admin_permission
+
+
+
 
 class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
                                 octoprint.plugin.TemplatePlugin,
                                 octoprint.plugin.SimpleApiPlugin,
                                 octoprint.plugin.AssetPlugin):
+
+	LOG_STATE_DELAY = 15.0
 
 	def __init__(self):
 		self.address = None
@@ -25,6 +30,7 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 	def initialize(self):
 		self.address = self._settings.get(["socket"])
 		self.forwardUrl = self._settings.get(["forwardUrl"])
+		self._log_state_timed(self.LOG_STATE_DELAY)
 
 	@property
 	def hostname(self):
@@ -252,6 +258,19 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 			return netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr']
 		except:
 			pass
+
+	def _log_state_timed(self, delay=0):
+		if delay > 0:
+			myThread = threading.Timer(delay, self._log_state_timed)
+			myThread.daemon = True
+			myThread.name = "Netconnectd_log_state_timer"
+			myThread.start()
+		else:
+			msg = "Netconnectd status: ip_eth0: {}, ip_wlan0: {}, status: {}".format(
+				self._get_ip_address('eth0'),
+				self._get_ip_address('wlan0'),
+				self._get_status())
+			logging.getLogger("octoprint.plugins." + __name__).info(msg)
 
 __plugin_name__ = "Netconnectd Client"
 
