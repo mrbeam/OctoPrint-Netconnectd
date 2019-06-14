@@ -10,6 +10,7 @@ import logging
 import threading
 import netifaces
 from flask import jsonify, make_response
+from flask.ext.babel import gettext
 
 import octoprint.plugin
 from octoprint.server import admin_permission
@@ -59,7 +60,7 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_template_configs(self):
 		return [
-			dict(type="settings", name="Network Connection")
+			dict(type="settings", name=gettext("Network Connection"))
 		]
 
 	##~~ SimpleApiPlugin API
