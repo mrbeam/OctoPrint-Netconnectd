@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-06-14 18:17+0200\n"
-"PO-Revision-Date: 2019-06-14 18:18+0200\n"
+"POT-Creation-Date: 2019-07-12 15:46+0200\n"
+"PO-Revision-Date: 2019-07-12 15:47+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -59,16 +59,18 @@ msgid "no wifi interface present"
 msgstr "sin interfaz wifi presente"
 
 #: octoprint_netconnectd/static/js/netconnectd.js:89
-msgid "Connected (IP: "
-msgstr "Conectado (IP: "
+#, python-format
+msgid "Connected (IP: %(ip)s)"
+msgstr "Conectado (IP: %(ip)s)"
 
 #: octoprint_netconnectd/static/js/netconnectd.js:91
 msgid "Not connected"
 msgstr "Sin conexión"
 
 #: octoprint_netconnectd/static/js/netconnectd.js:97
-msgid "Access point (IP: "
-msgstr "Punto de acceso (IP: "
+#, python-format
+msgid "Access point (IP: %(ip)s)"
+msgstr "Punto de acceso (IP: %(ip)s)"
 
 #: octoprint_netconnectd/static/js/netconnectd.js:99
 #, python-format
