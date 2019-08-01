@@ -100,36 +100,41 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 		))
 
 	def on_api_command(self, command, data, adminRequired=True):
-		if command == "refresh_wifi":
+		try:
+			if command == "refresh_wifi":
+				self._analytics.write_wifi_config_command(command, success=True)
+				return jsonify(self._get_wifi_list(force=True))
+
+			# any commands processed after this check require admin permissions
+			if adminRequired and not admin_permission.can():
+				self._analytics.write_wifi_config_command(command, success=False, err='Insufficient rights')
+				return make_response("Insufficient rights", 403)
+
+			if command == "configure_wifi":
+				if data["psk"]:
+					self._logger.info("Configuring wifi {ssid} and psk...".format(**data))
+				else:
+					self._logger.info("Configuring wifi {ssid}...".format(**data))
+
+				self._configure_and_select_wifi(data["ssid"], data["psk"], force=data["force"] if "force" in data else False)
+
+			elif command == "forget_wifi":
+				self._forget_wifi()
+
+			elif command == "reset":
+				self._reset()
+
+			elif command == "start_ap":
+				self._start_ap()
+
+			elif command == "stop_ap":
+				self._stop_ap()
+
 			self._analytics.write_wifi_config_command(command, success=True)
-			return jsonify(self._get_wifi_list(force=True))
 
-		# any commands processed after this check require admin permissions
-		if adminRequired and not admin_permission.can():
-			self._analytics.write_wifi_config_command(command, success=False, err='Insufficient rights')
-			return make_response("Insufficient rights", 403)
-
-		if command == "configure_wifi":
-			if data["psk"]:
-				self._logger.info("Configuring wifi {ssid} and psk...".format(**data))
-			else:
-				self._logger.info("Configuring wifi {ssid}...".format(**data))
-
-			self._configure_and_select_wifi(data["ssid"], data["psk"], force=data["force"] if "force" in data else False)
-
-		elif command == "forget_wifi":
-			self._forget_wifi()
-
-		elif command == "reset":
-			self._reset()
-
-		elif command == "start_ap":
-			self._start_ap()
-
-		elif command == "stop_ap":
-			self._stop_ap()
-
-		self._analytics.write_wifi_config_command(command, success=True)
+		except RuntimeError as e:
+			self._analytics.write_wifi_config_command(command, success=False, err=str(e))
+			raise RuntimeError
 
 	##~~ AssetPlugin API
 
