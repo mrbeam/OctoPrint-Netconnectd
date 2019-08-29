@@ -17,9 +17,9 @@ from octoprint.server import admin_permission
 from octoprint_netconnectd.analytics import Analytics
 
 class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
-                                octoprint.plugin.TemplatePlugin,
-                                octoprint.plugin.SimpleApiPlugin,
-                                octoprint.plugin.AssetPlugin):
+								octoprint.plugin.TemplatePlugin,
+								octoprint.plugin.SimpleApiPlugin,
+								octoprint.plugin.AssetPlugin):
 
 	LOG_STATE_DELAY = 15.0
 
@@ -265,7 +265,10 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 		:return: String IP
 		"""
 		try:
-			return netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr']
+			res = []
+			for tmp in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
+				res.append(tmp['addr'])
+			return ", ".join(res)
 		except:
 			pass
 
