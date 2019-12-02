@@ -86,21 +86,21 @@ $(function() {
 
         self.connectionStateTextEthernet = ko.computed(function() {
             if (self.status.connections.wired()) {
-                return "Connected (IP: " + self.status.ip_addresses.eth0() + ")";
+                return _.sprintf(gettext("Connected (IP: %(ip)s)"), {ip: self.status.ip_addresses.eth0()});
             } else {
-                return "Not connected";
+                return gettext("Not connected");
             }
         });
 
         self.connectionStateTextWifi = ko.computed(function() {
             if (self.status.connections.ap()) {
-                return "Access point (IP: " + self.status.ip_addresses.wlan0() + ")";
+                return _.sprintf(gettext("Access point (IP: %(ip)s)"), {ip: self.status.ip_addresses.wlan0()});
             } else if (self.status.connections.wifi() && self.status.wifi.current_ssid()) {
                 return _.sprintf(gettext("Connected to \"%(ssid)s\" (IP: %(ip)s)"), {ssid: self.status.wifi.current_ssid(), ip: self.status.ip_addresses.wlan0()});
             } else if (self.status.connections.wifi()) {
                 return _.sprintf(gettext("Connected to unknown wifi (IP: %(ip)s)"), {ssid: self.status.wifi.current_ssid(), ip: self.status.ip_addresses.wlan0()});
             } else {
-                return "Access point down, not connected";
+                return gettext("Access point down, not connected");
             }
         });
 

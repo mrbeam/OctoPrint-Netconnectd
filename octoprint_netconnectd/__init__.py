@@ -10,24 +10,25 @@ import logging
 import threading
 import netifaces
 from flask import jsonify, make_response
+from flask.ext.babel import gettext
 
 import octoprint.plugin
 from octoprint.server import admin_permission
-
-
-
+from octoprint_netconnectd.analytics import Analytics
 
 class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
-                                octoprint.plugin.TemplatePlugin,
-                                octoprint.plugin.SimpleApiPlugin,
-                                octoprint.plugin.AssetPlugin):
+								octoprint.plugin.TemplatePlugin,
+								octoprint.plugin.SimpleApiPlugin,
+								octoprint.plugin.AssetPlugin):
 
 	LOG_STATE_DELAY = 15.0
 
 	def __init__(self):
 		self.address = None
+		self._analytics = None
 
 	def initialize(self):
+		self._analytics = Analytics(self)
 		self.address = self._settings.get(["socket"])
 		self.forwardUrl = self._settings.get(["forwardUrl"])
 		self._log_state_timed(self.LOG_STATE_DELAY)
@@ -59,7 +60,7 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_template_configs(self):
 		return [
-			dict(type="settings", name="Network Connection")
+			dict(type="settings", name=gettext("Network Connection"))
 		]
 
 	##~~ SimpleApiPlugin API
@@ -99,32 +100,41 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 		))
 
 	def on_api_command(self, command, data, adminRequired=True):
-		if command == "refresh_wifi":
-			return jsonify(self._get_wifi_list(force=True))
+		try:
+			if command == "refresh_wifi":
+				self._analytics.write_wifi_config_command(command, success=True)
+				return jsonify(self._get_wifi_list(force=True))
 
-		# any commands processed after this check require admin permissions
-		if adminRequired and not admin_permission.can():
-			return make_response("Insufficient rights", 403)
-			
-		if command == "configure_wifi":
-			if data["psk"]:
-				self._logger.info("Configuring wifi {ssid} and psk...".format(**data))
-			else:
-				self._logger.info("Configuring wifi {ssid}...".format(**data))
+			# any commands processed after this check require admin permissions
+			if adminRequired and not admin_permission.can():
+				self._analytics.write_wifi_config_command(command, success=False, err='Insufficient rights')
+				return make_response("Insufficient rights", 403)
 
-			self._configure_and_select_wifi(data["ssid"], data["psk"], force=data["force"] if "force" in data else False)
+			if command == "configure_wifi":
+				if data["psk"]:
+					self._logger.info("Configuring wifi {ssid} and psk...".format(**data))
+				else:
+					self._logger.info("Configuring wifi {ssid}...".format(**data))
 
-		elif command == "forget_wifi":
-			self._forget_wifi()
+				self._configure_and_select_wifi(data["ssid"], data["psk"], force=data["force"] if "force" in data else False)
 
-		elif command == "reset":
-			self._reset()
+			elif command == "forget_wifi":
+				self._forget_wifi()
 
-		elif command == "start_ap":
-			self._start_ap()
+			elif command == "reset":
+				self._reset()
 
-		elif command == "stop_ap":
-			self._stop_ap()
+			elif command == "start_ap":
+				self._start_ap()
+
+			elif command == "stop_ap":
+				self._stop_ap()
+
+			self._analytics.write_wifi_config_command(command, success=True)
+
+		except RuntimeError as e:
+			self._analytics.write_wifi_config_command(command, success=False, err=str(e))
+			raise RuntimeError
 
 	##~~ AssetPlugin API
 
@@ -255,7 +265,10 @@ class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
 		:return: String IP
 		"""
 		try:
-			return netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr']
+			res = []
+			for tmp in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
+				res.append(tmp['addr'])
+			return ", ".join(res)
 		except:
 			pass
 
