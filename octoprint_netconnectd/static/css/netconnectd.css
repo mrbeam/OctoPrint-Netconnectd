@@ -23,7 +23,7 @@ table th.settings_plugin_netconnectd_wifis_action a.disabled, table td.settings_
     cursor: default
 }
 
-#settings_plugin_netconnectd_dialog button.btn.btn-primary.btn-block {
+#settings_plugin_netconnectd_dialog > button {
     position: inherit;
     width: 198px;
     float: right;
