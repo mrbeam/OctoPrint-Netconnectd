@@ -2,7 +2,7 @@
 
 
 __author__ = "Gina Häußge <osd@foosel.net>"
-__license__ = 'GNU Affero General Public License http://www.gnu.org/licenses/agpl.html'
+__license__ = "GNU Affero General Public License http://www.gnu.org/licenses/agpl.html"
 __copyright__ = "Copyright (C) 2014 The OctoPrint Project - Released under terms of the AGPLv3 License"
 
 
@@ -16,290 +16,318 @@ import octoprint.plugin
 from octoprint.server import admin_permission
 from octoprint_netconnectd.analytics import Analytics
 
-class NetconnectdSettingsPlugin(octoprint.plugin.SettingsPlugin,
-								octoprint.plugin.TemplatePlugin,
-								octoprint.plugin.SimpleApiPlugin,
-								octoprint.plugin.AssetPlugin):
 
-	LOG_STATE_DELAY = 15.0
+class NetconnectdSettingsPlugin(
+    octoprint.plugin.SettingsPlugin,
+    octoprint.plugin.TemplatePlugin,
+    octoprint.plugin.SimpleApiPlugin,
+    octoprint.plugin.AssetPlugin,
+):
 
-	def __init__(self):
-		self.address = None
-		self._analytics = None
+    LOG_STATE_DELAY = 15.0
 
-	def initialize(self):
-		self._analytics = Analytics(self)
-		self.address = self._settings.get(["socket"])
-		self.forwardUrl = self._settings.get(["forwardUrl"])
-		self._log_state_timed(self.LOG_STATE_DELAY)
+    def __init__(self):
+        self.address = None
+        self._analytics = None
 
-	@property
-	def hostname(self):
-		hostname = self._settings.get(["hostname"])
-		if hostname:
-			return hostname
-		else:
-			import socket
-			return socket.gethostname() + ".local"
+    def initialize(self):
+        self._analytics = Analytics(self)
+        self.address = self._settings.get(["socket"])
+        self.forwardUrl = self._settings.get(["forwardUrl"])
+        self._log_state_timed(self.LOG_STATE_DELAY)
 
-	##~~ SettingsPlugin
+    @property
+    def hostname(self):
+        hostname = self._settings.get(["hostname"])
+        if hostname:
+            return hostname
+        else:
+            import socket
 
-	def on_settings_save(self, data):
-		octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
-		self.address = self._settings.get(["socket"])
+            return socket.gethostname() + ".local"
 
-	def get_settings_defaults(self):
-		return dict(
-			socket="/var/run/netconnectd.sock",
-			hostname=None,
-			forwardUrl='http://find.mr-beam.org',
-			timeout=80
-		)
+    ##~~ SettingsPlugin
 
-	##~~ TemplatePlugin API
+    def on_settings_save(self, data):
+        octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
+        self.address = self._settings.get(["socket"])
 
-	def get_template_configs(self):
-		return [
-			dict(type="settings", name=gettext("Network Connection"))
-		]
+    def get_settings_defaults(self):
+        return dict(
+            socket="/var/run/netconnectd.sock",
+            hostname=None,
+            forwardUrl="http://find.mr-beam.org",
+            timeout=80,
+        )
 
-	##~~ SimpleApiPlugin API
+    ##~~ TemplatePlugin API
 
-	def get_api_commands(self):
-		return dict(
-			start_ap=[],
-			stop_ap=[],
-			refresh_wifi=[],
-			configure_wifi=[],
-			forget_wifi=[],
-			reset=[]
-		)
+    def get_template_configs(self):
+        return [dict(type="settings", name=gettext("Network Connection"))]
 
-	def is_api_adminonly(self):
-		return False
+    ##~~ SimpleApiPlugin API
 
-	def on_api_get(self, request):
-		try:
-			status = self._get_status()
-			if status["wifi"]["present"]:
-				wifis = self._get_wifi_list()
-			else:
-				wifis = []
-		except Exception as e:
-			return jsonify(dict(error=str(e)))
+    def get_api_commands(self):
+        return dict(
+            start_ap=[],
+            stop_ap=[],
+            refresh_wifi=[],
+            configure_wifi=[],
+            forget_wifi=[],
+            reset=[],
+        )
 
-		return jsonify(dict(
-			wifis=wifis,
-			status=status,
-			hostname=self.hostname,
-			forwardUrl=self.forwardUrl,
-			ip_addresses=dict(
-				eth0=self._get_ip_address('eth0'),
-				wlan0=self._get_ip_address('wlan0')
-			)
-		))
+    def is_api_adminonly(self):
+        return False
 
-	def on_api_command(self, command, data, adminRequired=True):
-		try:
-			if command == "refresh_wifi":
-				self._analytics.write_wifi_config_command(command, success=True)
-				return jsonify(self._get_wifi_list(force=True))
+    def on_api_get(self, request):
+        try:
+            status = self._get_status()
+            if status["wifi"]["present"]:
+                wifis = self._get_wifi_list()
+            else:
+                wifis = []
+        except Exception as e:
+            return jsonify(dict(error=str(e)))
 
-			# any commands processed after this check require admin permissions
-			if adminRequired and not admin_permission.can():
-				self._analytics.write_wifi_config_command(command, success=False, err='Insufficient rights')
-				return make_response("Insufficient rights", 403)
+        return jsonify(
+            dict(
+                wifis=wifis,
+                status=status,
+                hostname=self.hostname,
+                forwardUrl=self.forwardUrl,
+                ip_addresses=dict(
+                    eth0=self._get_ip_address("eth0"),
+                    wlan0=self._get_ip_address("wlan0"),
+                ),
+            )
+        )
 
-			if command == "configure_wifi":
-				if data["psk"]:
-					self._logger.info("Configuring wifi {ssid} and psk...".format(**data))
-				else:
-					self._logger.info("Configuring wifi {ssid}...".format(**data))
+    def on_api_command(self, command, data, adminRequired=True):
+        try:
+            if command == "refresh_wifi":
+                self._analytics.write_wifi_config_command(command, success=True)
+                return jsonify(self._get_wifi_list(force=True))
 
-				self._configure_and_select_wifi(data["ssid"], data["psk"], force=data["force"] if "force" in data else False)
+            # any commands processed after this check require admin permissions
+            if adminRequired and not admin_permission.can():
+                self._analytics.write_wifi_config_command(
+                    command, success=False, err="Insufficient rights"
+                )
+                return make_response("Insufficient rights", 403)
 
-			elif command == "forget_wifi":
-				self._forget_wifi()
+            if command == "configure_wifi":
+                if data["psk"]:
+                    self._logger.info(
+                        "Configuring wifi {ssid} and psk...".format(**data)
+                    )
+                else:
+                    self._logger.info("Configuring wifi {ssid}...".format(**data))
 
-			elif command == "reset":
-				self._reset()
+                self._configure_and_select_wifi(
+                    data["ssid"],
+                    data["psk"],
+                    force=data["force"] if "force" in data else False,
+                )
 
-			elif command == "start_ap":
-				self._start_ap()
+            elif command == "forget_wifi":
+                self._forget_wifi()
 
-			elif command == "stop_ap":
-				self._stop_ap()
+            elif command == "reset":
+                self._reset()
 
-			self._analytics.write_wifi_config_command(command, success=True)
+            elif command == "start_ap":
+                self._start_ap()
 
-		except RuntimeError as e:
-			self._analytics.write_wifi_config_command(command, success=False, err=str(e))
-			raise RuntimeError
+            elif command == "stop_ap":
+                self._stop_ap()
 
-	##~~ AssetPlugin API
+            self._analytics.write_wifi_config_command(command, success=True)
 
-	def get_assets(self):
-		return dict(
-			js=["js/netconnectd.js"],
-			css=["css/netconnectd.css"],
-			less=["less/netconnectd.less"]
-		)
+        except RuntimeError as e:
+            self._analytics.write_wifi_config_command(
+                command, success=False, err=str(e)
+            )
+            raise RuntimeError
 
-	##~~ Private helpers
+    ##~~ AssetPlugin API
 
-	def _get_wifi_list(self, force=False):
-		payload = dict()
-		if force:
-			self._logger.info("Forcing wifi refresh...")
-			payload["force"] = True
+    def get_assets(self):
+        return dict(
+            js=["js/netconnectd.js"],
+            css=["css/netconnectd.css"],
+            less=["less/netconnectd.less"],
+        )
 
-		flag, content = self._send_message("list_wifi", payload)
-		if not flag:
-			raise RuntimeError("Error while listing wifi: " + content)
+    ##~~ Private helpers
 
-		result = []
-		for wifi in content:
-			result.append(dict(ssid=wifi["ssid"], address=wifi["address"], quality=wifi["signal"], encrypted=wifi["encrypted"]))
-		return result
+    def _get_wifi_list(self, force=False):
+        payload = dict()
+        if force:
+            self._logger.info("Forcing wifi refresh...")
+            payload["force"] = True
 
-	def _get_status(self):
-		payload = dict()
+        flag, content = self._send_message("list_wifi", payload)
+        if not flag:
+            raise RuntimeError("Error while listing wifi: " + content)
 
-		flag, content = self._send_message("status", payload)
-		if not flag:
-			raise RuntimeError("Error while querying status: " + content)
+        result = []
+        for wifi in content:
+            result.append(
+                dict(
+                    ssid=wifi["ssid"],
+                    address=wifi["address"],
+                    quality=wifi["signal"],
+                    encrypted=wifi["encrypted"],
+                )
+            )
+        return result
 
-		return content
+    def _get_status(self):
+        payload = dict()
 
-	def _configure_and_select_wifi(self, ssid, psk, force=False):
-		payload = dict(
-			ssid=ssid,
-			psk=psk,
-			force=force
-		)
+        flag, content = self._send_message("status", payload)
+        if not flag:
+            raise RuntimeError("Error while querying status: " + content)
 
-		flag, content = self._send_message("config_wifi", payload)
-		self._logger.info("config_wifi: flag=%s, content=%s", flag, content)
-		if not flag:
-			raise RuntimeError("Error while configuring wifi: " + content)
+        return content
 
-		flag, content = self._send_message("start_wifi", dict())
-		self._logger.info("start_wifi: flag=%s, content=%s", flag, content)
-		if not flag:
-			raise RuntimeError("Error while selecting wifi: " + content)
+    def _configure_and_select_wifi(self, ssid, psk, force=False):
+        payload = dict(ssid=ssid, psk=psk, force=force)
 
-	def _forget_wifi(self):
-		payload = dict()
-		flag, content = self._send_message("forget_wifi", payload)
-		if not flag:
-			raise RuntimeError("Error while forgetting wifi: " + content)
+        flag, content = self._send_message("config_wifi", payload)
+        self._logger.info("config_wifi: flag=%s, content=%s", flag, content)
+        if not flag:
+            raise RuntimeError("Error while configuring wifi: " + content)
 
-	def _reset(self):
-		payload = dict()
-		flag, content = self._send_message("reset", payload)
-		if not flag:
-			raise RuntimeError("Error while factory resetting netconnectd: " + content)
+        flag, content = self._send_message("start_wifi", dict())
+        self._logger.info("start_wifi: flag=%s, content=%s", flag, content)
+        if not flag:
+            raise RuntimeError("Error while selecting wifi: " + content)
 
-	def _start_ap(self):
-		payload = dict()
-		flag, content = self._send_message("start_ap", payload)
-		if not flag:
-			raise RuntimeError("Error while starting ap: " + content)
+    def _forget_wifi(self):
+        payload = dict()
+        flag, content = self._send_message("forget_wifi", payload)
+        if not flag:
+            raise RuntimeError("Error while forgetting wifi: " + content)
 
-	def _stop_ap(self):
-		payload = dict()
-		flag, content = self._send_message("stop_ap", payload)
-		if not flag:
-			raise RuntimeError("Error while stopping ap: " + content)
+    def _reset(self):
+        payload = dict()
+        flag, content = self._send_message("reset", payload)
+        if not flag:
+            raise RuntimeError("Error while factory resetting netconnectd: " + content)
 
-	def _send_message(self, message, data):
-		obj = dict()
-		obj[message] = data
+    def _start_ap(self):
+        payload = dict()
+        flag, content = self._send_message("start_ap", payload)
+        if not flag:
+            raise RuntimeError("Error while starting ap: " + content)
 
-		import json
-		js = json.dumps(obj, encoding="utf8", separators=(",", ":"))
+    def _stop_ap(self):
+        payload = dict()
+        flag, content = self._send_message("stop_ap", payload)
+        if not flag:
+            raise RuntimeError("Error while stopping ap: " + content)
 
-		import socket
-		sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-		sock.settimeout(self._settings.get_int(["timeout"]))
-		try:
-			sock.connect(self.address)
-			sock.sendall(js + '\x00')
+    def _send_message(self, message, data):
+        obj = dict()
+        obj[message] = data
 
-			buffer = []
-			while True:
-				chunk = sock.recv(16)
-				if chunk:
-					buffer.append(chunk)
-					if chunk.endswith('\x00'):
-						break
+        import json
 
-			data = ''.join(buffer).strip()[:-1]
+        js = json.dumps(obj, encoding="utf8", separators=(",", ":"))
 
-			response = json.loads(data.strip())
-			if "result" in response:
-				return True, response["result"]
+        import socket
 
-			elif "error" in response:
-				# something went wrong
-				self._logger.warn("Request to netconnectd went wrong: " + response["error"])
-				return False, response["error"]
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        sock.settimeout(self._settings.get_int(["timeout"]))
+        try:
+            sock.connect(self.address)
+            sock.sendall(js + "\x00")
 
-			else:
-				output = "Unknown response from netconnectd: {response!r}".format(response=response)
-				self._logger.warn(output)
-				return False, output
+            buffer = []
+            while True:
+                chunk = sock.recv(16)
+                if chunk:
+                    buffer.append(chunk)
+                    if chunk.endswith("\x00"):
+                        break
 
-		except Exception as e:
-			output = "Error while talking to netconnectd: {}".format(e)
-			self._logger.warn(output)
-			return False, output
+            data = "".join(buffer).strip()[:-1]
 
-		finally:
-			sock.close()
+            response = json.loads(data.strip())
+            if "result" in response:
+                return True, response["result"]
 
-	def _get_ip_address(self, interface):
-		"""
-		Returns the external IP address of the given interface
-		:param interface:
-		:return: String IP
-		"""
-		try:
-			res = []
-			for tmp in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
-				res.append(tmp['addr'])
-			return ", ".join(res)
-		except:
-			pass
+            elif "error" in response:
+                # something went wrong
+                self._logger.warn(
+                    "Request to netconnectd went wrong: " + response["error"]
+                )
+                return False, response["error"]
 
-	def _log_state_timed(self, delay=0):
-		if delay > 0:
-			myThread = threading.Timer(delay, self._log_state_timed)
-			myThread.daemon = True
-			myThread.name = "Netconnectd_log_state_timer"
-			myThread.start()
-		else:
-			msg = "Netconnectd status: ip_eth0: {}, ip_wlan0: {}, status: {}".format(
-				self._get_ip_address('eth0'),
-				self._get_ip_address('wlan0'),
-				self._get_status())
-			logging.getLogger("octoprint.plugins." + __name__).info(msg)
+            else:
+                output = "Unknown response from netconnectd: {response!r}".format(
+                    response=response
+                )
+                self._logger.warn(output)
+                return False, output
+
+        except Exception as e:
+            output = "Error while talking to netconnectd: {}".format(e)
+            self._logger.warn(output)
+            return False, output
+
+        finally:
+            sock.close()
+
+    def _get_ip_address(self, interface):
+        """
+        Returns the external IP address of the given interface
+        :param interface:
+        :return: String IP
+        """
+        try:
+            res = []
+            for tmp in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
+                res.append(tmp["addr"])
+            return ", ".join(res)
+        except:
+            pass
+
+    def _log_state_timed(self, delay=0):
+        if delay > 0:
+            myThread = threading.Timer(delay, self._log_state_timed)
+            myThread.daemon = True
+            myThread.name = "Netconnectd_log_state_timer"
+            myThread.start()
+        else:
+            msg = "Netconnectd status: ip_eth0: {}, ip_wlan0: {}, status: {}".format(
+                self._get_ip_address("eth0"),
+                self._get_ip_address("wlan0"),
+                self._get_status(),
+            )
+            logging.getLogger("octoprint.plugins." + __name__).info(msg)
+
 
 __plugin_name__ = "Netconnectd Client"
 
 
 def __plugin_check__():
-	import sys
-	if sys.platform == 'linux2':
-		return True
+    import sys
 
-	logging.getLogger("octoprint.plugins." + __name__).warn("The netconnectd plugin only supports Linux")
-	return False
+    if sys.platform == "linux2":
+        return True
+
+    logging.getLogger("octoprint.plugins." + __name__).warn(
+        "The netconnectd plugin only supports Linux"
+    )
+    return False
 
 
 def __plugin_load__():
-	# since we depend on a Linux environment, we instantiate the plugin implementation here since this will only be
-	# called if the OS check above was successful
-	global __plugin_implementation__
-	__plugin_implementation__ = NetconnectdSettingsPlugin()
-	return True
+    # since we depend on a Linux environment, we instantiate the plugin implementation here since this will only be
+    # called if the OS check above was successful
+    global __plugin_implementation__
+    __plugin_implementation__ = NetconnectdSettingsPlugin()
+    return True
