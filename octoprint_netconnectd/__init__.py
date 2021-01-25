@@ -10,7 +10,7 @@ import logging
 import threading
 import netifaces
 from flask import jsonify, make_response
-from flask.ext.babel import gettext
+from flask_babel import gettext
 
 import octoprint.plugin
 from octoprint.server import admin_permission
@@ -311,12 +311,12 @@ class NetconnectdSettingsPlugin(
 
 
 __plugin_name__ = "Netconnectd Client"
-
+__plugin_pythoncompat__ = ">=3.7,<4"
 
 def __plugin_check__():
     import sys
 
-    if sys.platform == "linux2":
+    if sys.platform.startswith("linux"):
         return True
 
     logging.getLogger("octoprint.plugins." + __name__).warn(
