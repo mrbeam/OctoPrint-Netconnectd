@@ -138,6 +138,13 @@ $(function() {
             "wifis",
             {
                 "ssid": function (a, b) {
+		    // hidden SSIDs always go at the end, sorted by MAC
+		    if (!a["ssid"] && b["ssid"]) return 1;
+		    if (!b["ssid"] && a["ssid"]) return -1;
+		    if (!a["ssid"] && !b["ssid"]) {
+			if (a["address"] < b["address"]) return -1;
+			if (a["address"] > b["address"]) return 1;
+		    }
                     // sorts ascending
                     if (a["ssid"].toLocaleLowerCase() < b["ssid"].toLocaleLowerCase()) return -1;
                     if (a["ssid"].toLocaleLowerCase() > b["ssid"].toLocaleLowerCase()) return 1;
