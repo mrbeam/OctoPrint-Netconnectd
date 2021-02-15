@@ -19,6 +19,8 @@ $(function() {
         
         self.hostname = ko.observable(undefined);
         self.forwardUrl = ko.observable(undefined);
+	self.countries = ko.observableArray([]);
+	self.country = ko.observable(undefined);
         
         self.status = {
             link: ko.observable(),
@@ -237,6 +239,9 @@ $(function() {
                     self.requestData();
                 }, 30000)
             }
+
+	    self.countries(response.countries)
+	    self.country(response.country)
         };
 
         self.configureWifi = function(data) {
@@ -415,13 +420,10 @@ $(function() {
                 self.pollingTimeoutId = undefined;
             }
 
-            $.ajax({
-                url: API_BASEURL + "plugin/netconnectd",
-                // url: self.isWizardActive ? "/plugin/mrbeam/wifi" : API_BASEURL + "plugin/netconnectd",
-                type: "GET",
-                dataType: "json",
-                success: self.fromResponse
-            });
+	    OctoPrint.simpleApiGet("netconnectd")
+		.done(function(response) {
+		    self.fromResponse(response);
+		});
         };
 
         self.onUserLoggedIn = function(user) {

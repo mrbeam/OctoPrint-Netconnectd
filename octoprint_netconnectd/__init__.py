@@ -34,6 +34,7 @@ class NetconnectdSettingsPlugin(
         self._analytics = Analytics(self)
         self.address = self._settings.get(["socket"])
         self.forwardUrl = self._settings.get(["forwardUrl"])
+        self.country = self._settings.get(["country"])
         self._log_state_timed(self.LOG_STATE_DELAY)
 
     @property
@@ -50,6 +51,7 @@ class NetconnectdSettingsPlugin(
 
     def on_settings_save(self, data):
         octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
+        self.country = self._settings.get(["country"])
         self.address = self._settings.get(["socket"])
 
     def get_settings_defaults(self):
@@ -58,6 +60,7 @@ class NetconnectdSettingsPlugin(
             hostname=None,
             forwardUrl="http://find.mr-beam.org",
             timeout=80,
+            country=None,
         )
 
     ##~~ TemplatePlugin API
@@ -90,6 +93,13 @@ class NetconnectdSettingsPlugin(
         except Exception as e:
             return jsonify(dict(error=str(e)))
 
+        try:
+            data = self._get_country_list()
+            countries = data["countries"]
+            country = data["country"]
+        except Exception as e:
+            return jsonify(dict(error=str(e)))
+
         return jsonify(
             dict(
                 wifis=wifis,
@@ -100,6 +110,8 @@ class NetconnectdSettingsPlugin(
                     eth0=self._get_ip_address("eth0"),
                     wlan0=self._get_ip_address("wlan0"),
                 ),
+                country=country,
+                countries=countries,
             )
         )
 
@@ -182,6 +194,19 @@ class NetconnectdSettingsPlugin(
                 )
             )
         return result
+
+    def _get_country_list(self, force=False):
+        payload = {}
+
+        flag, content = self._send_message("country_list", payload)
+        if not flag:
+            raise RuntimeError("Error while getting countries wifi: " + content)
+
+        countries = []
+        for country in content["countries"]:
+            countries.append(country)
+        return {"country": content["country"],
+            "countries": countries}
 
     def _get_status(self):
         payload = dict()
