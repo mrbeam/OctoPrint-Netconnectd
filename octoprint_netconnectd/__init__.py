@@ -209,8 +209,7 @@ class NetconnectdSettingsPlugin(
         countries = []
         for country in content["countries"]:
             countries.append(country)
-        return {"country": content["country"],
-            "countries": countries}
+        return {"country": content["country"], "countries": countries}
 
     def _get_status(self):
         payload = dict()
@@ -347,6 +346,7 @@ class NetconnectdSettingsPlugin(
 
 __plugin_name__ = "Netconnectd Client"
 __plugin_pythoncompat__ = ">=2.7,<4"
+
 
 def __plugin_check__():
     import sys
