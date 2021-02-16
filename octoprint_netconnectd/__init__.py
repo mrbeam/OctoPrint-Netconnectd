@@ -51,7 +51,6 @@ class NetconnectdSettingsPlugin(
 
     def on_settings_save(self, data):
         octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
-        self.country = self._settings.get(["country"])
         self.address = self._settings.get(["socket"])
 
     def get_settings_defaults(self):
@@ -78,6 +77,7 @@ class NetconnectdSettingsPlugin(
             configure_wifi=[],
             forget_wifi=[],
             reset=[],
+            set_country=[],
         )
 
     def is_api_adminonly(self):
@@ -97,6 +97,7 @@ class NetconnectdSettingsPlugin(
             data = self._get_country_list()
             countries = data["countries"]
             country = data["country"]
+            self.country = data["country"]
         except Exception as e:
             return jsonify(dict(error=str(e)))
 
@@ -153,6 +154,9 @@ class NetconnectdSettingsPlugin(
 
             elif command == "stop_ap":
                 self._stop_ap()
+
+            elif command == "set_country":
+                self._set_country(data["country"])
 
             self._analytics.write_wifi_config_command(command, success=True)
 
@@ -253,6 +257,12 @@ class NetconnectdSettingsPlugin(
         flag, content = self._send_message("stop_ap", payload)
         if not flag:
             raise RuntimeError("Error while stopping ap: " + content)
+
+    def _set_country(self, country_code):
+        payload = {"country_code": country_code}
+        flag, content = self._send_message("set_country", payload)
+        if not flag:
+            raise RuntimeError("Error while setting country: " + content)
 
     def _send_message(self, message, data):
         obj = dict()

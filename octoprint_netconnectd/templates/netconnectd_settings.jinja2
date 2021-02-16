@@ -14,7 +14,9 @@
 		optionsText: 'country',
 		optionsValue: 'code',
 		optionsCaption: 'Select Country...',
-		value: country"></select>
+		value: country,
+		event: {change: selectedValueChanged}">
+	    </select>
 	</div>
     </div>
     <div class="pull-right" data-bind="visible: enableQualitySorting">

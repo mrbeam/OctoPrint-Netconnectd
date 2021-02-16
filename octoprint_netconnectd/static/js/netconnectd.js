@@ -349,6 +349,15 @@ $(function() {
             }, 80000);
         };
 
+	self.selectedValueChanged = function(context) {
+            if (!self.canRun()) return;
+
+	    country = context.country();
+	    if (country) {
+		self._postCommand("set_country", {country: country});
+	    }
+	};
+
         self.sendReset = function() {
             if (!self.canRun()) return;
 
