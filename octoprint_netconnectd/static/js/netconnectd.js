@@ -476,6 +476,18 @@ $(function() {
             return res;
         }
 
+        self.signalQuality = function (quality){
+            if(quality >= 60){
+                return 'good four-bars';
+            }else if(quality >= 40){
+                return 'ok three-bars'
+            }else if(quality >= 20){
+                return 'bad two-bars'
+            }else{
+                return 'bad one-bar'
+            }
+        }
+
     }
 
     // view model class, parameters for constructor, container to bind to

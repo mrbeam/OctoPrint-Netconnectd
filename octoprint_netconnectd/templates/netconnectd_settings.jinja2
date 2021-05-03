@@ -33,7 +33,15 @@
                     data-bind="text: ssid"></span> <small class="muted">({{ _('Address') }}: <span
                     data-bind="text: address"></span>)</small></td>
             <td class="settings_plugin_netconnectd_wifis_quality"
-                data-bind="visible: $root.enableQualitySorting, text: qualityText"></td>
+                data-bind="visible: $root.enableQualitySorting">
+                <div data-bind="css: $root.signalQuality(quality)" class="signal-bars mt1 sizing-box">
+                    <div class="first-bar bar"></div>
+                    <div class="second-bar bar"></div>
+                    <div class="third-bar bar"></div>
+                    <div class="fourth-bar bar"></div>
+                    <div class="fifth-bar bar"></div>
+                </div>
+            </td>
             <td class="settings_plugin_netconnectd_wifis_action">
                 <button class="btn btn-small"
                         data-bind="click: function() { $parent.configureWifi($data); }, css: {disabled: !$root.loginState.isUser() || $root.working() || $root.error() || $root.getEntryId($data) == $root.statusCurrentWifi()}">
