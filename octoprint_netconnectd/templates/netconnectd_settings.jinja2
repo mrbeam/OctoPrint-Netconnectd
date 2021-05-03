@@ -1,4 +1,5 @@
-<div id="settings_plugin_netconnectd_dialog" data-bind="allowBindings: true" class="scrollable" style="padding-bottom:2em; overflow-y: auto; height: calc(100vh - 100px);">
+<div id="settings_plugin_netconnectd_dialog" data-bind="allowBindings: true" class="scrollable"
+     style="padding-bottom:2em; overflow-y: auto; height: calc(100vh - 100px);">
     <h3>{{ _('Network Connection') }}</h3>
 
     <p>
@@ -7,39 +8,40 @@
     <p>
         <strong>{{ _('Wifi') }}:</strong> <span data-bind="text: connectionStateTextWifi"></span>
     </p>
-    <div class="control-group">
-	<label class="control-labelt"><strong>Country</strong></label>
-	<div class="controls">
-	    <select data-bind="options: countries,
-		optionsText: 'country',
-		optionsValue: 'code',
-		optionsCaption: 'Select Country...',
-		value: country,
-		event: {change: selectedValueChanged}">
-	    </select>
-	</div>
-    </div>
     <div class="pull-right" data-bind="visible: enableQualitySorting">
         <small>
-            {{ _('Sort by') }}: <a href="#" data-bind="click: function() { listHelper.changeSorting('ssid'); }">{{ _('SSID') }} ({{ _('ascending') }})</a> | <a href="#" data-bind="click: function() { listHelper.changeSorting('quality'); }">{{ _('Quality') }} ({{ _('descending') }})</a>
+            {{ _('Sort by') }}: <a href="#"
+                                   data-bind="click: function() { listHelper.changeSorting('ssid'); }">{{ _('SSID') }}
+            ({{ _('ascending') }})</a> | <a href="#"
+                                            data-bind="click: function() { listHelper.changeSorting('quality'); }">{{ _('Quality') }}
+            ({{ _('descending') }})</a>
         </small>
     </div>
     <table class="table table-striped table-hover table-condensed table-hover" id="settings_plugin_netconnectd_wifis">
         <thead>
         <tr>
             <th class="settings_plugin_netconnectd_wifis_ssid">{{ _('SSID') }}</th>
-            <th class="settings_plugin_netconnectd_wifis_quality" data-bind="visible: enableQualitySorting">{{ _('Quality') }}</th>
+            <th class="settings_plugin_netconnectd_wifis_quality"
+                data-bind="visible: enableQualitySorting">{{ _('Quality') }}</th>
             <th class="settings_plugin_netconnectd_wifis_action">{{ _('Action') }}</th>
         </tr>
         </thead>
         <tbody data-bind="foreach: listHelper.paginatedItems">
-            <tr data-bind="attr: {title: name}">
-                <td class="settings_plugin_netconnectd_wifis_ssid"><span class="icon-lock" data-bind="invisible: !encrypted"></span> <span data-bind="text: ssid"></span> <small class="muted">({{ _('Address') }}: <span data-bind="text: address"></span>)</small></td>
-                <td class="settings_plugin_netconnectd_wifis_quality" data-bind="visible: $root.enableQualitySorting, text: qualityText"></td>
-                <td class="settings_plugin_netconnectd_wifis_action">
-                    <button class="btn btn-small" data-bind="click: function() { $parent.configureWifi($data); }, css: {disabled: !$root.loginState.isUser() || $root.working() || $root.error() || $root.getEntryId($data) == $root.statusCurrentWifi()}"><i class="icon-spinner icon-spin" data-bind="visible: $root.working"></i><i class="icon-signin" data-bind="visible: !$root.working()"></i> {{ _('Connect') }}</button>
-                </td>
-            </tr>
+        <tr data-bind="attr: {title: name}">
+            <td class="settings_plugin_netconnectd_wifis_ssid"><span class="icon-lock"
+                                                                     data-bind="invisible: !encrypted"></span> <span
+                    data-bind="text: ssid"></span> <small class="muted">({{ _('Address') }}: <span
+                    data-bind="text: address"></span>)</small></td>
+            <td class="settings_plugin_netconnectd_wifis_quality"
+                data-bind="visible: $root.enableQualitySorting, text: qualityText"></td>
+            <td class="settings_plugin_netconnectd_wifis_action">
+                <button class="btn btn-small"
+                        data-bind="click: function() { $parent.configureWifi($data); }, css: {disabled: !$root.loginState.isUser() || $root.working() || $root.error() || $root.getEntryId($data) == $root.statusCurrentWifi()}">
+                    <i class="icon-spinner icon-spin" data-bind="visible: $root.working"></i><i class="icon-signin"
+                                                                                                data-bind="visible: !$root.working()"></i> {{ _('Connect') }}
+                </button>
+            </td>
+        </tr>
         </tbody>
     </table>
     <div class="pagination pagination-mini pagination-centered">
@@ -50,7 +52,8 @@
         </ul>
         <ul data-bind="foreach: listHelper.pages">
             <li data-bind="css: { active: $data.number === $root.listHelper.currentPage(), disabled: $data.number === -1 }">
-                <a href="#" data-bind="text: $data.text, click: function() { $root.listHelper.changePage($data.number); }"></a>
+                <a href="#"
+                   data-bind="text: $data.text, click: function() { $root.listHelper.changePage($data.number); }"></a>
             </li>
         </ul>
         <ul>
@@ -60,17 +63,42 @@
         </ul>
     </div>
 
-    <button class="btn btn-primary btn-block" data-bind="click: function() { $root.refresh() }, enable: $root.daemonOnline() && $root.status.wifi.present()">{{ _('Refresh') }}</button>
+    <button class="btn btn-primary btn-block"
+            data-bind="click: function() { $root.refresh() }, enable: $root.daemonOnline() && $root.status.wifi.present()">{{ _('Refresh') }}</button>
 
     <div>
-        <small class="muted">{{ _('netconnectd socket') }}: <span data-bind="text: settings.plugins.netconnectd.socket"></span></small>
+        <small class="muted">{{ _('netconnectd socket') }}: <span
+                data-bind="text: settings.plugins.netconnectd.socket"></span></small>
     </div>
 
     <div>
-        <div><small><a href="#" class="muted" onclick="$(this).children().toggleClass('icon-caret-right icon-caret-down').parent().parent().parent().next().slideToggle('fast')"><i class="icon-caret-right"></i> {{ _('Advanced options') }}</a></small></div>
-        <div class="hide row-fluid">
-            <button class="btn span6" data-bind="click: function() { if ($root.apRunning()) { $root.sendStopAp(); } else { $root.sendStartAp(); } }, enable: $root.daemonOnline()"><span data-bind="visible: !$root.apRunning() && $root.daemonOnline()">{{ _('Start AP') }}</span><span data-bind="visible: $root.apRunning() && $root.daemonOnline()">{{ _('Stop AP') }}</span><span data-bind="visible: !$root.daemonOnline()">{{ _('Daemon offline') }}</span></button>
-            <button class="btn span6" data-bind="click: function() { $root.sendReset() }, enable: $root.daemonOnline()">{{ _('Reset daemon') }}</button>
+        <div><small><a href="#" class="muted"
+                       onclick="$(this).children().toggleClass('icon-caret-right icon-caret-down').parent().parent().parent().next().slideToggle('fast')"><i
+                class="icon-caret-right"></i> {{ _('Advanced options') }}</a></small></div>
+        <div class="hide">
+            <div class="row-fluid">
+                <div class="control-group">
+                    <label class="control-labelt"><strong>Country</strong></label>
+                    <div class="controls">
+                        <select data-bind="options: countries,
+		optionsText: 'country',
+		optionsValue: 'code',
+		optionsCaption: 'Select Country...',
+		value: country,
+		event: {change: selectedValueChanged}">
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row-fluid">
+                <button class="btn span6"
+                        data-bind="click: function() { if ($root.apRunning()) { $root.sendStopAp(); } else { $root.sendStartAp(); } }, enable: $root.daemonOnline()">
+                    <span data-bind="visible: !$root.apRunning() && $root.daemonOnline()">{{ _('Start AP') }}</span><span
+                        data-bind="visible: $root.apRunning() && $root.daemonOnline()">{{ _('Stop AP') }}</span><span
+                        data-bind="visible: !$root.daemonOnline()">{{ _('Daemon offline') }}</span></button>
+                <button class="btn span6"
+                        data-bind="click: function() { $root.sendReset() }, enable: $root.daemonOnline()">{{ _('Reset daemon') }}</button>
+            </div>
         </div>
     </div>
 
@@ -81,24 +109,36 @@
         </div>
         <div class="modal-body">
             <form class="form-horizontal">
-                <div class="control-group" data-bind="css: {success: $root.editorWifiPassphrase2() && !$root.editorWifiPassphraseMismatch()}">
-                    <label class="control-label" for="settings_plugin_netconnectd_wificonfig_passphrase1">{{ _('Password') }}</label>
+                <div class="control-group"
+                     data-bind="css: {success: $root.editorWifiPassphrase2() && !$root.editorWifiPassphraseMismatch()}">
+                    <label class="control-label"
+                           for="settings_plugin_netconnectd_wificonfig_passphrase1">{{ _('Password') }}</label>
                     <div class="controls">
-                        <input type="password" class="input-block-level" id="settings_plugin_netconnectd_wificonfig_passphrase1" data-bind="value: $root.editorWifiPassphrase1, valueUpdate: 'input'" required>
+                        <input type="password" class="input-block-level"
+                               id="settings_plugin_netconnectd_wificonfig_passphrase1"
+                               data-bind="value: $root.editorWifiPassphrase1, valueUpdate: 'input'" required>
                     </div>
                 </div>
-                <div class="control-group" data-bind="css: {success: $root.editorWifiPassphrase2() && !$root.editorWifiPassphraseMismatch(), error: $root.editorWifiPassphrase2() && $root.editorWifiPassphraseMismatch()}">
-                    <label class="control-label" for="settings_plugin_netconnectd_wificonfig_passphrase2">{{ _('Repeat Password') }}</label>
+                <div class="control-group"
+                     data-bind="css: {success: $root.editorWifiPassphrase2() && !$root.editorWifiPassphraseMismatch(), error: $root.editorWifiPassphrase2() && $root.editorWifiPassphraseMismatch()}">
+                    <label class="control-label"
+                           for="settings_plugin_netconnectd_wificonfig_passphrase2">{{ _('Repeat Password') }}</label>
                     <div class="controls">
-                        <input type="password" class="input-block-level" id="settings_plugin_netconnectd_wificonfig_passphrase2" data-bind="value: $root.editorWifiPassphrase2, valueUpdate: 'input'" required>
-                        <span class="help-inline" data-bind="visible: $root.editorWifiPassphrase2() && $root.editorWifiPassphraseMismatch()">{{ _('Passwords do not match') }}</span>
+                        <input type="password" class="input-block-level"
+                               id="settings_plugin_netconnectd_wificonfig_passphrase2"
+                               data-bind="value: $root.editorWifiPassphrase2, valueUpdate: 'input'" required>
+                        <span class="help-inline"
+                              data-bind="visible: $root.editorWifiPassphrase2() && $root.editorWifiPassphraseMismatch()">{{ _('Passwords do not match') }}</span>
                     </div>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" data-bind="enable: !$root.working() && !$root.error()" aria-hidden="true">{{ _('Abort') }}</button>
-            <button class="btn btn-primary" data-bind="click: function() { $root.confirmWifiConfiguration(); }, enable: !$root.editorWifiPassphraseMismatch() && !$root.working() && !$root.error()"><i class="icon-spinner icon-spin" data-bind="visible: working"></i> {{ _('Confirm') }}</button>
+            <button class="btn" data-dismiss="modal" data-bind="enable: !$root.working() && !$root.error()"
+                    aria-hidden="true">{{ _('Abort') }}</button>
+            <button class="btn btn-primary"
+                    data-bind="click: function() { $root.confirmWifiConfiguration(); }, enable: !$root.editorWifiPassphraseMismatch() && !$root.working() && !$root.error()">
+                <i class="icon-spinner icon-spin" data-bind="visible: working"></i> {{ _('Confirm') }}</button>
         </div>
     </div>
 </div>
