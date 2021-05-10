@@ -478,13 +478,13 @@ $(function() {
 
         self.signalQuality = function (quality){
             if(quality >= 60){
-                return 'good four-bars';
+                return 'four-bars';
             }else if(quality >= 40){
-                return 'ok three-bars'
+                return 'three-bars'
             }else if(quality >= 20){
-                return 'bad two-bars'
+                return 'two-bars'
             }else{
-                return 'bad one-bar'
+                return 'one-bar'
             }
         }
 

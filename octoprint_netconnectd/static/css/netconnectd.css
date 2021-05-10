@@ -31,50 +31,46 @@ table th.settings_plugin_netconnectd_wifis_action a.disabled, table td.settings_
 }
 
 /*Signal Bars*/
-
-* { box-sizing: border-box; }
-
+* {
+    box-sizing: border-box;
+}
 .sizing-box {
-  height: 20px;
-  width: 30px;
-  float: right;
+    height: 20px;
+    width: 30px;
+    float: right;
 }
-
 .signal-bars {
-  /*display: inline-block;*/
+    /*display: inline-block;*/
 }
-
 .signal-bars .bar {
-  width: 14%;
-  margin-left: 1%;
-  min-height: 20%;
-  display: inline-block;
+    width: 14%;
+    margin-left: 1%;
+    min-height: 20%;
+    display: inline-block;
+    border: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.4);
 }
-.signal-bars .bar.first-bar  { height: 20%; }
-.signal-bars .bar.second-bar { height: 40%; }
-.signal-bars .bar.third-bar  { height: 60%; }
-.signal-bars .bar.fourth-bar { height: 80%; }
-.signal-bars .bar.fifth-bar  { height: 99%; }
-
-.good .bar {
-  background-color: #16a085;
-  border: thin solid #12816b;
+.signal-bars .bar.first-bar {
+    height: 20%;
 }
-.bad .bar {
-  background-color: #e74c3c;
-  border: thin solid #a82315;
+.signal-bars .bar.second-bar {
+    height: 40%;
 }
-.ok .bar {
-  background-color: #f1c40f;
-  border: thin solid #d0a90c;
+.signal-bars .bar.third-bar {
+    height: 60%;
 }
-
+.signal-bars .bar.fourth-bar {
+    height: 80%;
+}
+.signal-bars .bar.fifth-bar {
+    height: 99%;
+}
 .four-bars .bar.fifth-bar,
 .three-bars .bar.fifth-bar,
 .three-bars .bar.fourth-bar,
 .one-bar .bar:not(.first-bar),
-.two-bars .bar:not(.first-bar):not(.second-bar) {       background-color: #fafafa;
-  border: thin solid #f3f3f3;
+.two-bars .bar:not(.first-bar):not(.second-bar) {
+    background-color: #fafafa;
+    border: thin solid #f3f3f3;
 }
-
 /*Signal Bars*/
