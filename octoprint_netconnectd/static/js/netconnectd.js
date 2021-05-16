@@ -299,6 +299,11 @@ $(function() {
 
         self.sendStartAp = function() {
             if (!self.canRun()) return;
+            new PNotify({
+                title: gettext("Access point"),
+                text: _.sprintf(gettext("Mr Beam is now starting the access point. The connection may be interrupted before the access point is available.")),
+                type: "info"
+            });
             self._postCommand("start_ap", {});
         };
 
