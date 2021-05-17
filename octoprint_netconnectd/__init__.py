@@ -202,14 +202,20 @@ class NetconnectdSettingsPlugin(
     def _get_country_list(self, force=False):
         payload = {}
 
-        flag, content = self._send_message("country_list", payload)
-        if not flag:
-            raise RuntimeError("Error while getting countries wifi: " + content)
+        try:
+            flag, content = self._send_message("country_list", payload)
+            if not flag:
+                raise RuntimeError("Error while getting countries wifi: " + content)
 
-        countries = []
-        for country in content["countries"]:
-            countries.append(country)
-        return {"country": content["country"], "countries": countries}
+            countries = []
+            for country in content["countries"]:
+                countries.append(country)
+            return {"country": content["country"], "countries": countries}
+
+        except Exception as e:
+            output = "Error while getting countries wifi: {}".format(e)
+            self._logger.warn(output)
+            return {"country": "", "countries": []}
 
     def _get_status(self):
         payload = dict()
