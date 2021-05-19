@@ -203,6 +203,7 @@ class NetconnectdSettingsPlugin(
         payload = {}
 
         try:
+            # The "country_list" call only exists in the netconnectd server of the new image and not the old one
             flag, content = self._send_message("country_list", payload)
             if not flag:
                 raise RuntimeError("Error while getting countries wifi: " + content)
@@ -265,6 +266,7 @@ class NetconnectdSettingsPlugin(
 
     def _set_country(self, country_code):
         payload = {"country_code": country_code}
+        # The "set_country" call only exists in the netconnectd server of the new image and not the old one
         flag, content = self._send_message("set_country", payload)
         if not flag:
             raise RuntimeError("Error while setting country: " + content)
