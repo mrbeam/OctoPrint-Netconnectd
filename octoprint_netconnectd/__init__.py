@@ -202,14 +202,21 @@ class NetconnectdSettingsPlugin(
     def _get_country_list(self, force=False):
         payload = {}
 
-        flag, content = self._send_message("country_list", payload)
-        if not flag:
-            raise RuntimeError("Error while getting countries wifi: " + content)
+        try:
+            # The "country_list" call only exists in the netconnectd server of the new image and not the old one
+            flag, content = self._send_message("country_list", payload)
+            if not flag:
+                raise RuntimeError("Error while getting countries wifi: " + content)
 
-        countries = []
-        for country in content["countries"]:
-            countries.append(country)
-        return {"country": content["country"], "countries": countries}
+            countries = []
+            for country in content["countries"]:
+                countries.append(country)
+            return {"country": content["country"], "countries": countries}
+
+        except Exception as e:
+            output = "Error while getting countries wifi: {}".format(e)
+            self._logger.warn(output)
+            return {"country": "", "countries": []}
 
     def _get_status(self):
         payload = dict()
@@ -259,6 +266,7 @@ class NetconnectdSettingsPlugin(
 
     def _set_country(self, country_code):
         payload = {"country_code": country_code}
+        # The "set_country" call only exists in the netconnectd server of the new image and not the old one
         flag, content = self._send_message("set_country", payload)
         if not flag:
             raise RuntimeError("Error while setting country: " + content)
