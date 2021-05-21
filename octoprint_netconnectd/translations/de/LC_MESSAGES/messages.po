@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-07-12 15:46+0200\n"
-"PO-Revision-Date: 2019-07-12 16:03+0200\n"
+"POT-Creation-Date: 2021-05-21 15:03+0200\n"
+"PO-Revision-Date: 2021-05-21 15:06+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de\n"
@@ -16,88 +16,89 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
-"X-Generator: Poedit 2.2.3\n"
+"X-Generator: Poedit 2.4.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: octoprint_netconnectd/__init__.py:63
+#: octoprint_netconnectd/__init__.py:68
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:3
 msgid "Network Connection"
 msgstr "Netzwerkverbindung"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:61
+#: octoprint_netconnectd/static/js/netconnectd.js:63
 msgid "Error while talking to netconnectd, is the service running?"
 msgstr "Fehler in der Kommunikation mit netconnectd, läuft der Dienst?"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:63
+#: octoprint_netconnectd/static/js/netconnectd.js:65
 msgid "Acting as access point"
 msgstr "Als Access Point fungieren"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:66
+#: octoprint_netconnectd/static/js/netconnectd.js:68
 msgid "Connected via wire"
 msgstr "Anschluss per Kabel"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:69
+#: octoprint_netconnectd/static/js/netconnectd.js:71
 #, python-format
 msgid "Connected via wifi (SSID \"%(ssid)s\")"
 msgstr "Verbindung per WLAN (SSID \"%(ssid)s\")"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:71
+#: octoprint_netconnectd/static/js/netconnectd.js:73
 msgid "Connected via wifi (unknown SSID)"
 msgstr "Verbindung per WLAN (unbekannte SSID)"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:74
+#: octoprint_netconnectd/static/js/netconnectd.js:76
 msgid "Connected (unknown connection)"
 msgstr "Verbunden (unbekannte Verbindung)"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:77
+#: octoprint_netconnectd/static/js/netconnectd.js:79
 msgid "Not connected to network"
 msgstr "Nicht mit einem Netzwerk verbunden"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:81
+#: octoprint_netconnectd/static/js/netconnectd.js:83
 msgid "no wifi interface present"
 msgstr "keine WLAN-Schnittstelle vorhanden"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:89
+#: octoprint_netconnectd/static/js/netconnectd.js:91
 #, python-format
 msgid "Connected (IP: %(ip)s)"
 msgstr "Verbunden (IP: %(ip)s)"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:91
+#: octoprint_netconnectd/static/js/netconnectd.js:93
 msgid "Not connected"
 msgstr "Nicht verbunden"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:97
+#: octoprint_netconnectd/static/js/netconnectd.js:99
 #, python-format
 msgid "Access point (IP: %(ip)s)"
 msgstr "Access Point (IP: %(ip)s)"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:99
+#: octoprint_netconnectd/static/js/netconnectd.js:101
 #, python-format
 msgid "Connected to \"%(ssid)s\" (IP: %(ip)s)"
 msgstr "Verbunden mit \"%(ssid)s\" (IP: %(ip)s)"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:101
+#: octoprint_netconnectd/static/js/netconnectd.js:103
 #, python-format
 msgid "Connected to unknown wifi (IP: %(ip)s)"
 msgstr "Verbunden mit unbekanntem WLAN (IP: %(ip)s)"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:103
+#: octoprint_netconnectd/static/js/netconnectd.js:105
 msgid "Access point down, not connected"
 msgstr "Access Point aus, nicht verbunden"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:266
+#: octoprint_netconnectd/static/js/netconnectd.js:278
 msgid "Wifi Connected"
 msgstr "WLAN verbunden"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:267
+#: octoprint_netconnectd/static/js/netconnectd.js:279
 #, python-format
 msgid "Mr Beam 2 is now connceted to your wifi '%s'."
 msgstr "Mr Beam II ist jetzt mit Deinem WLAN '%s' verbunden."
 
-#: octoprint_netconnectd/static/js/netconnectd.js:281
+#: octoprint_netconnectd/static/js/netconnectd.js:293
 msgid "Connection failed"
 msgstr "Verbindung gescheitert"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:282
+#: octoprint_netconnectd/static/js/netconnectd.js:294
 #, python-format
 msgid ""
 "Mr Beam 2 could not connect to your wifi '%s'. Did you enter the correct "
@@ -106,7 +107,19 @@ msgstr ""
 "Mr Beam II konnte sich nicht mit Deinem WLAN '%s' verbinden. Hast Du das "
 "Passwort korrekt eingegeben?"
 
-#: octoprint_netconnectd/static/js/netconnectd.js:323
+#: octoprint_netconnectd/static/js/netconnectd.js:303
+msgid "Access point"
+msgstr "Access Point"
+
+#: octoprint_netconnectd/static/js/netconnectd.js:304
+msgid ""
+"Mr Beam is now starting the access point. The connection may be interrupted "
+"before the access point is available."
+msgstr ""
+"Mr Beam startet nun den Access Point. Die Verbindung kann zwischenzeitlich "
+"unterbrochen werden, bevor der Access Point verfügbar ist."
+
+#: octoprint_netconnectd/static/js/netconnectd.js:340
 #, python-format
 msgid ""
 "OctoPrint is now switching to your configured Wifi connection and therefore "
@@ -121,102 +134,102 @@ msgstr ""
 "nicht wieder verbunden wirst, versuche bitte, Dich manuell mit Mr Beam II zu "
 "verbinden, da die automatische Verbindung dann wohl n nicht geklappt hat."
 
-#: octoprint_netconnectd/static/js/netconnectd.js:326
+#: octoprint_netconnectd/static/js/netconnectd.js:343
 msgid "Reconnecting..."
 msgstr "Wiederverbinden....."
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:3
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:6
 msgid "Ethernet"
 msgstr "Ethernet"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:6
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:9
 msgid "Wifi"
 msgstr "WLAN"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:10
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:13
 msgid "Sort by"
 msgstr "Sortieren nach"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:10
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:16
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:14
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:23
 msgid "SSID"
 msgstr "SSID"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:10
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:15
 msgid "ascending"
 msgstr "aufsteigend"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:10
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:17
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:16
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:25
 msgid "Quality"
 msgstr "Qualität"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:10
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:17
 msgid "descending"
 msgstr "absteigend"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:18
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:26
 msgid "Action"
 msgstr "Aktion"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:23
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:33
 msgid "Address"
 msgstr "Adresse"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:26
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:49
 msgid "Connect"
 msgstr "Verbinden"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:49
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:75
 msgid "Refresh"
 msgstr "Aktualisieren"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:52
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:78
 msgid "netconnectd socket"
 msgstr "netconnectd Socket"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:56
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:85
 msgid "Advanced options"
 msgstr "Erweiterte Optionen"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:58
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:104
 msgid "Start AP"
 msgstr "AP starten"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:58
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:105
 msgid "Stop AP"
 msgstr "AP stoppen"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:58
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:106
 msgid "Daemon offline"
 msgstr "Daemon offline"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:59
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:108
 msgid "Reset daemon"
 msgstr "Dämon zurücksetzen"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:66
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:116
 #, python-format
 msgid "Configure secured Wifi connection to \"%(ssid)s\""
 msgstr "Konfiguriere eine gesicherte WLAN-Verbindung zu \"%(ssid)s\""
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:71
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:123
 msgid "Password"
 msgstr "Passwort"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:77
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:133
 msgid "Repeat Password"
 msgstr "Passwort wiederholen"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:80
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:139
 msgid "Passwords do not match"
 msgstr "Passwörter stimmen nicht überein"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:86
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:146
 msgid "Abort"
 msgstr "Abbrechen"
 
-#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:87
+#: octoprint_netconnectd/templates/netconnectd_settings.jinja2:149
 msgid "Confirm"
 msgstr "Bitte bestätige, um fortzufahren."
 
