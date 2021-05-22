@@ -19,6 +19,8 @@ $(function() {
         
         self.hostname = ko.observable(undefined);
         self.forwardUrl = ko.observable(undefined);
+	self.countries = ko.observableArray([]);
+	self.country = ko.observable(undefined);
         
         self.status = {
             link: ko.observable(),
@@ -138,6 +140,13 @@ $(function() {
             "wifis",
             {
                 "ssid": function (a, b) {
+		    // hidden SSIDs always go at the end, sorted by MAC
+		    if (!a["ssid"] && b["ssid"]) return 1;
+		    if (!b["ssid"] && a["ssid"]) return -1;
+		    if (!a["ssid"] && !b["ssid"]) {
+			if (a["address"] < b["address"]) return -1;
+			if (a["address"] > b["address"]) return 1;
+		    }
                     // sorts ascending
                     if (a["ssid"].toLocaleLowerCase() < b["ssid"].toLocaleLowerCase()) return -1;
                     if (a["ssid"].toLocaleLowerCase() > b["ssid"].toLocaleLowerCase()) return 1;
@@ -230,6 +239,9 @@ $(function() {
                     self.requestData();
                 }, 30000)
             }
+
+	    self.countries(response.countries)
+	    self.country(response.country)
         };
 
         self.configureWifi = function(data) {
@@ -287,6 +299,11 @@ $(function() {
 
         self.sendStartAp = function() {
             if (!self.canRun()) return;
+            new PNotify({
+                title: gettext("Access point"),
+                text: _.sprintf(gettext("Mr Beam is now starting the access point. The connection may be interrupted before the access point is available.")),
+                type: "info"
+            });
             self._postCommand("start_ap", {});
         };
 
@@ -336,6 +353,15 @@ $(function() {
             // }, 5000);
             }, 80000);
         };
+
+	self.selectedValueChanged = function(context) {
+            if (!self.canRun()) return;
+
+	    country = context.country();
+	    if (country) {
+		self._postCommand("set_country", {country: country});
+	    }
+	};
 
         self.sendReset = function() {
             if (!self.canRun()) return;
@@ -408,13 +434,10 @@ $(function() {
                 self.pollingTimeoutId = undefined;
             }
 
-            $.ajax({
-                url: API_BASEURL + "plugin/netconnectd",
-                // url: self.isWizardActive ? "/plugin/mrbeam/wifi" : API_BASEURL + "plugin/netconnectd",
-                type: "GET",
-                dataType: "json",
-                success: self.fromResponse
-            });
+	    OctoPrint.simpleApiGet("netconnectd")
+		.done(function(response) {
+		    self.fromResponse(response);
+		});
         };
 
         self.onUserLoggedIn = function(user) {
@@ -456,6 +479,18 @@ $(function() {
                 res = Math.round(10-((dbm*-1 +max) / (max-min)) * 10)*10
             }
             return res;
+        }
+
+        self.signalQuality = function (quality){
+            if(quality >= 60){
+                return 'four-bars';
+            }else if(quality >= 40){
+                return 'three-bars'
+            }else if(quality >= 20){
+                return 'two-bars'
+            }else{
+                return 'one-bar'
+            }
         }
 
     }
