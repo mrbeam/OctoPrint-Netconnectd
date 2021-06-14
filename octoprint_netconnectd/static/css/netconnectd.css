@@ -36,14 +36,11 @@ table th.settings_plugin_netconnectd_wifis_action a.disabled, table td.settings_
 }
 .sizing-box {
     height: 20px;
-    width: 30px;
+    width: 56px;
     float: right;
 }
-.signal-bars {
-    /*display: inline-block;*/
-}
 .signal-bars .bar {
-    width: 14%;
+    width: 8%;
     margin-left: 1%;
     min-height: 20%;
     display: inline-block;
@@ -72,5 +69,8 @@ table th.settings_plugin_netconnectd_wifis_action a.disabled, table td.settings_
 .two-bars .bar:not(.first-bar):not(.second-bar) {
     background-color: #fafafa;
     border: thin solid #f3f3f3;
+}
+.settings_plugin_netconnectd_wifis_quality{
+    padding: 10px 5px !important;
 }
 /*Signal Bars*/
